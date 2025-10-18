@@ -16,7 +16,7 @@ MANUFACTURERS = {
         "SNES / Super Famicom",
         "Nintendo 64",
         "Nintendo Virtual Boy",
-        "Nintendo Gamecube",
+        "Nintendo Gamcube",
         "Game Boy / Color",
         "Game Boy Advance",
         "Nintendo DS / DSi"
@@ -50,7 +50,7 @@ CONSOLE_GUI_MAP = {
     "SNES / Super Famicom": None,
     "Nintendo 64": setup_n64_gui,
     "Nintendo Virtual Boy": None,
-    "Nintendo Gamecube": None,
+    "Nintendo Gamcube": None,
     "Game Boy / Color": None,
     "Game Boy Advance": setup_gba_gui,
     "Nintendo DS / DSi": None,
@@ -74,31 +74,51 @@ CONSOLE_GUI_MAP = {
 PASTEL_DARK_BLUE = "#4A6FA5"
 TEXT_COLOR = "#1E3A5F"
 
-
 class TopLevelGUI:
     WIDTH = 1000
-    HEIGHT = 620    
+    HEIGHT = 580
 
     CONSOLE_GEOMETRY_MAP = {
-        console: (1000, 620)
-        for console in CONSOLE_GUI_MAP.keys()
+        "NES / Famicom": (800, 600),
+        "SNES / Super Famicom": (800, 600),
+        "Nintendo 64": (1000, 580),
+        "Nintendo Virtual Boy": (800, 600),
+        "Nintendo Gamcube": (800, 600),
+        "Game Boy / Color": (800, 600),
+        "Game Boy Advance": (900, 400),
+        "Nintendo DS / DSi": (800, 600),
+        "Sega Master System": (800, 600),
+        "Sega Genesis/Megadrive": (800, 600),
+        "Sega Saturn": (800, 600),
+        "Sega Dreamcast": (900, 500),
+        "Sega GameGear": (800, 600),
+        "PlayStation 1": (900, 500),
+        "PlayStation 2": (900, 500),
+        "PlayStation 3": (1000, 600),
+        "PlayStation Portable": (900, 400),
+        "PlayStation Vita": (900, 400),
+        "Xbox": (1000, 500),
+        "Xbox 360": (1000, 500),
+        "Atari Jaguar": (800, 600),
+        "Atari Lynx": (800, 600)
     }
 
     # ---------------- Reusable Back Button ----------------
     def _create_back_button(self, parent_frame, command, row=None):
+        """Reusable back button identical to console selection screen"""
         hover_bg = "#3A5C8A" if self._current_theme == "dark" else "#d0d0d0"
         back_btn = Button(
             parent_frame,
             text="Back",
             width=10,
-            height=1,
+            height=2,
             bg=PASTEL_DARK_BLUE,
             fg=TEXT_COLOR,
             command=command,
             relief="flat"
         )
         if row is None:
-            row = parent_frame.grid_size()[1]
+            row = parent_frame.grid_size()[1]  # default to next available row
         back_btn.grid(row=row, column=0, columnspan=2, pady=20)
         self._add_hover(back_btn, PASTEL_DARK_BLUE, hover_bg)
         return back_btn
@@ -305,10 +325,11 @@ class TopLevelGUI:
             hover_bg = "#3A5C8A" if self._current_theme == "dark" else "#d0d0d0"
             self._add_hover(btn, PASTEL_DARK_BLUE, hover_bg)
 
+        # Back button identical to console selection
         back_row = (total + 1) // 2 + 1
         self._create_back_button(self.current_frame, lambda: self.show_manufacturer_selection(), row=back_row)
 
-    # ---------------- Open Console GUI (Refactored) ----------------
+    # ---------------- Open Console GUI ----------------
     def _open_console_gui(self, console_name):
         gui_func = CONSOLE_GUI_MAP.get(console_name)
 
@@ -324,17 +345,13 @@ class TopLevelGUI:
         self.current_frame.grid_columnconfigure(1, weight=1)
 
         if gui_func:
+            # Wrap N64 GUI in a separate container to avoid grid/pack conflicts
             container = Frame(self.current_frame)
-            container.grid(row=0, column=0, columnspan=2, sticky="nsew")
+            container.pack(expand=True, fill="both")
             gui_func(container)
-
-            # Persistent back button using the reusable method
-            self._create_back_button(
-                self.current_frame,
-                lambda: self.show_manufacturer_gui(self._current_manu),
-                row=1
-            )
+            # GUI handles its own back button
         else:
+            # Coming Soon screen using grid only
             coming_label = Label(
                 self.current_frame,
                 text=f"{console_name} Coming Soon...",
@@ -344,6 +361,7 @@ class TopLevelGUI:
             )
             coming_label.grid(row=0, column=0, columnspan=2, pady=(50, 20))
 
+            # Pixel-perfect back button
             self._create_back_button(
                 self.current_frame,
                 lambda: self.show_manufacturer_gui(self._current_manu),
