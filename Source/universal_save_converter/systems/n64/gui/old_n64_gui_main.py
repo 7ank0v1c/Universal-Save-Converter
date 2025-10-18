@@ -2,7 +2,8 @@
 
 import os
 import threading
-from tkinter import PhotoImage, Label, Button, Frame, Text, Scrollbar, LEFT, RIGHT, BOTH, Y, Tk
+from tkinter import PhotoImage, Label, Button, Frame, Text, Scrollbar, LEFT, RIGHT, BOTH, Y
+from tkinter import ttk
 
 # --- N64 Constants ---
 from systems.n64.n64_constants import SOURCE_LIST, TARGET_LIST
@@ -39,24 +40,23 @@ def setup_n64_gui(parent):
     """Set up the N64 GUI inside the given parent frame or Tk instance."""
     gui_vars.init_vars(parent)
     log_visible = True
-    is_root = isinstance(parent, Tk)
+
+    # Disable resizing
+    parent.resizable(False, False)
 
     # --------------------------
     # Center Window Slightly Higher
     # --------------------------
     def center_window(width, height, vertical_offset=VERTICAL_OFFSET):
         parent.update_idletasks()
-        if is_root:
-            screen_width = parent.winfo_screenwidth()
-            screen_height = parent.winfo_screenheight()
-            x = (screen_width // 2) - (width // 2)
-            y = (screen_height // 2) - (height // 2) - vertical_offset
-            parent.geometry(f"{width}x{height}+{x}+{y}")
-        return
+        screen_width = parent.winfo_screenwidth()
+        screen_height = parent.winfo_screenheight()
+        x = (screen_width // 2) - (width // 2)
+        y = (screen_height // 2) - (height // 2) - vertical_offset
+        parent.geometry(f"{width}x{height}+{x}+{y}")
+        return x, y
 
-    if is_root:
-        parent.resizable(False, False)
-        center_window(EXPANDED_WIDTH, HEIGHT)
+    center_window(EXPANDED_WIDTH, HEIGHT)
 
     # --------------------------
     # Load N64 Logo
@@ -66,8 +66,7 @@ def setup_n64_gui(parent):
         logo_path = os.path.join(project_root, "resources", "n64_logo.png")
         parent.n64_logo_img = PhotoImage(file=logo_path)
         logo_img = parent.n64_logo_img
-        if is_root:
-            parent.iconphoto(True, logo_img)
+        parent.iconphoto(True, logo_img)
     except Exception as e:
         print(f"Could not load logo: {e}")
         logo_img = None
@@ -110,15 +109,14 @@ def setup_n64_gui(parent):
     log_text_frame = Frame(log_frame, height=200)
     log_text_frame.pack(fill=BOTH, expand=False, padx=5, pady=5)
 
-    # create log_box
     log_box = Text(log_text_frame, height=25, width=50, wrap="word")
     log_box.pack(side=LEFT, fill=BOTH, expand=True)
+
     scrollbar = Scrollbar(log_text_frame, command=log_box.yview)
     scrollbar.pack(side=RIGHT, fill=Y)
     log_box.config(yscrollcommand=scrollbar.set)
 
-    # hook it for logging
-    set_log_widget(log_box)  # <--- make sure this stays here
+    set_log_widget(log_box)
 
     # --------------------------
     # Toggle Log Visibility
@@ -127,13 +125,11 @@ def setup_n64_gui(parent):
         nonlocal log_visible
         if log_visible:
             log_frame.grid_remove()
-            if is_root:
-                center_window(BASE_WIDTH, HEIGHT)
+            center_window(BASE_WIDTH, HEIGHT)
             log_visible = False
         else:
             log_frame.grid()
-            if is_root:
-                center_window(EXPANDED_WIDTH, HEIGHT)
+            center_window(EXPANDED_WIDTH, HEIGHT)
             log_visible = True
 
     toggle_btn = Button(parent, text="Show/Hide Log", command=toggle_log_window)
@@ -253,12 +249,3 @@ def setup_n64_gui(parent):
     # --------------------------
     apply_theme(parent)
     start_polling(parent)
-
-
-# --------------------------
-# Standalone Launch
-# --------------------------
-if __name__ == "__main__":
-    root = Tk()
-    setup_n64_gui(root)
-    root.mainloop()
