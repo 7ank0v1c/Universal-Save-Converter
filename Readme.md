@@ -1,7 +1,7 @@
 <img src="Source/universal_save_converter/resources/new_usc_logo_large.png" width="800">
 
 # Please Note: 
-This app is not ready to be used yet, the GUI is unfinished (almost there), and the implimentation of the save converting is not complete. Only N64 is half complete, but it is unreliable currently. Needs more testing first.
+This app is not yet ready to be used, the GUI is unfinished (almost there), and the implimentation of the save converting is not yet complete. Only N64 is half complete, but it is unreliable currently. Needs more testing first.
 
 
 Use at your own risk.
@@ -126,4 +126,5 @@ Original source: [Archive.org](https://archive.org/details/console-logos-profess
 All videogame and computer system logos used, are the property of their respective Developers/Producers/Distributors/Licensors.
 
 All logos were taken from [Dan Patrick's set](https://archive.org/details/console-logos-professionally-redrawn-plus-official-versions). (Thanks for the great work).
+
 
