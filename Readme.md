@@ -5,14 +5,14 @@ Re-written from the ground up in python
 
 This is a work in progress and a while off from being functional, the only save core that is working currently is n64, but even that is incomplete
 
-About Universal Save Converter (USC)
-=
+# About Universal Save Converter (USC)
+
 Currently, Universal Save Converter is a tool to convert N64 saves files for transfer between emulators and/or real N64 hardware.
 I do aim to continue working on this project to bring over all the main system save file conversion one at a time, I am currently focusing on the GUI, which is taking longer than i want. Once done the GUI will be modular for the different systems (mostly)
 
 
-Currently, Unviversal Save Converter Usage
-=
+# Currently, Unviversal Save Converter Usage
+
 
 To convert:
  * Select a save file to convert
@@ -34,8 +34,8 @@ Lookup list:
  * Otherwise, use the Lookup list under the Help menu.
 
 
-Info about N64 Saves Files
-=
+# Info about N64 Saves Files
+
  
  * The Nintendo 64 has 5 save formats: 4Kbit EEPROM (.eep), 16Kbit EEPROM (.eep), SRAM (.sra), FlashRAM (.fla), and Controller Pak (.mpk)
  * The exact file sizes that N64 hardware generates for these save types are as follows:
@@ -49,8 +49,8 @@ Info about N64 Saves Files
  * This is why I have created a "Standard Size" for these save types. The standard size is set to be the smallest file size to be compatible across all emulators/hardware. 
 
 
-Standard Save File Type Sizes
-=
+# Standard Save File Type Sizes
+
 
  * All N64 Save file conversions will output the converted save file to the standard file type size for maximum compatibility
  * Here are the Standard Save File Sizes:
@@ -62,8 +62,8 @@ Standard Save File Type Sizes
    - Retroarch Save (.srm): 290 kilobytes (Same as the real Retroarch save)
 
 
-Save File Notes
-=
+# Save File Notes
+
 
  * SRAM and FLA saves need to be byteswapped when converting between PC emulators and Wii/WiiU/N64
  * Controller Pak and EEPROM saves do NOT need to be byteswapped when converting between PC Emulators and Wii/WiiU/N64. But good practice to at least do a resize to ensure compatibility.
@@ -86,7 +86,7 @@ after a save file has been converted with this program (output target set to Wii
  * Wii64/not64 cannot read 4Kbit EEPROM saves at .5 kilobytes. The 4Kbit EEPROM must be padded to 2 kilobytes (i.e. the same size as 16Kbit EEPROM). Also Wii64 cannot read Controller Pak saves at 32 kilobytes. They must be padded to 128 kilobytes (i.e. 4x the size. It assumes a controller pak for each of the 4 controllers? Just my guess). This app takes care of all that for you.
 
 # About
-=
+
 
 These are console logos professionally redrawn + official logos
 
@@ -97,8 +97,9 @@ Original source: [Archive.org](https://archive.org/details/console-logos-profess
 <br>
 
 # License
-=
+
 
 All videogame and computer system logos used are the property of their respective Developers/Producers/Distributors/Licensors.
 
 All logos were taken from [Dan Patrick's set](https://archive.org/details/console-logos-professionally-redrawn-plus-official-versions). (Thanks for the great work).
+
