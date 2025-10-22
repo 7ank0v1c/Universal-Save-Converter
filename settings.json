@@ -1,5 +1,0 @@
-"files.exclude": {
-    "**/.DS_Store": true,
-    "**/__pycache__": true,
-    "**/.venv": true
-}
