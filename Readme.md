@@ -90,6 +90,10 @@ after a save file has been converted with this program (output target set to Wii
 
 These are console logos professionally redrawn + official logos
 
+PRO100BYTE Team & TheDayG0ne
+
+https://github.com/PRO100BYTE/console-logos
+
 This repository is a kind of "mirror" of [Dan Patrick's logo set](https://archive.org/details/console-logos-professionally-redrawn-plus-official-versions). 
 
 Original source: [Archive.org](https://archive.org/details/console-logos-professionally-redrawn-plus-official-versions).
@@ -102,4 +106,5 @@ Original source: [Archive.org](https://archive.org/details/console-logos-profess
 All videogame and computer system logos used are the property of their respective Developers/Producers/Distributors/Licensors.
 
 All logos were taken from [Dan Patrick's set](https://archive.org/details/console-logos-professionally-redrawn-plus-official-versions). (Thanks for the great work).
+
 
