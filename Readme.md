@@ -7,7 +7,7 @@ This app is not ready to be used yet, the GUI is unfinished (almost there), and 
 Use at your own risk.
 
 
-Pleae remember to always make a copy of your save, and back it up somewhere safe, before converting.
+Please remember to always make a copy of your save, and back it up somewhere safe, before converting.
 
 
 # About:
@@ -97,14 +97,21 @@ after a save file has been converted with this program (output target set to Wii
  * I noticed that SRAM saves created by Everdrive64 use the extention (.srm) instead of (.sra). No big deal. Just don't confuse those (.srm) saves with Retroarch saves which also use the (.srm) extension.
  * Wii64/not64 cannot read 4Kbit EEPROM saves at .5 kilobytes. The 4Kbit EEPROM must be padded to 2 kilobytes (i.e. the same size as 16Kbit EEPROM). Also Wii64 cannot read Controller Pak saves at 32 kilobytes. They must be padded to 128 kilobytes (i.e. 4x the size. It assumes a controller pak for each of the 4 controllers? Just my guess). This app takes care of all that for you.
 
-# About
+# Recognition and Thanks:
+A huge thanks to Daniel Falk, for the 'N64SaveConverterGui tool'.
+Whilst this is rewritten from the ground up, I was able to use your conversion logic work, to get me started.
+Thank You 🙏
+
+Here is a link to this repo: https://github.com/Ninjiteu/N64SaveConverter
 
 
-These are console logos professionally redrawn + official logos
+Further to this, I wanted to recognise the 'PRO100BYTE Team' & 'TheDayG0ne' for your work on your professsionally redrawn conosle logos and official logos.
+Work like this is what makes projects like mine here all the more professional looking, and keeps retro alive 🙏
 
-PRO100BYTE Team & TheDayG0ne
+Here is a link to the logos repo: https://github.com/PRO100BYTE/console-logos
 
-https://github.com/PRO100BYTE/console-logos
+
+
 
 This repository is a kind of "mirror" of [Dan Patrick's logo set](https://archive.org/details/console-logos-professionally-redrawn-plus-official-versions). 
 
@@ -118,6 +125,7 @@ Original source: [Archive.org](https://archive.org/details/console-logos-profess
 All videogame and computer system logos used are the property of their respective Developers/Producers/Distributors/Licensors.
 
 All logos were taken from [Dan Patrick's set](https://archive.org/details/console-logos-professionally-redrawn-plus-official-versions). (Thanks for the great work).
+
 
 
 
