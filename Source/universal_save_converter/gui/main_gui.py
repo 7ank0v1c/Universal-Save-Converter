@@ -133,6 +133,15 @@ class TopLevelGUI:
             bg=self.logo_frame.cget("bg")
         ).pack()
 
+        # ----------------- Taskbar / window icon -----------------
+        taskbar_logo_path = os.path.join(os.path.dirname(__file__), "..", "resources", "usc_logo.png")
+        try:
+            taskbar_logo = tk.PhotoImage(file=taskbar_logo_path)
+            self.root.iconphoto(False, taskbar_logo)
+            self.taskbar_logo = taskbar_logo  # keep a reference
+        except Exception:
+            pass
+
     # ---------------- Helpers ----------------
     def _clear_frame(self):
         if self.current_frame:
