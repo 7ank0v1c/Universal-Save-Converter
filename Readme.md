@@ -1,11 +1,20 @@
 <img src="Source/universal_save_converter/resources/new_usc_logo_large.png" width="800">
 
+# Please Note: 
+This app is not ready to be used yet, the GUI is not yet finished (almost there), but the implimentation of the save converting is not done, only N64 is half done, but not reliable yet. Needs more testing first. Use at your own risk.
+
+
+Pleae remember to always make a copy of your save (a backup), before converting.
+
+
+# About:
+
 Originally Based on Daniel Falk's N64SaveConverterGui tool
 Re-written from the ground up in python
 
+
 This is a work in progress and a while off from being functional, the only save core that is working currently is n64, but even that is incomplete
 
-# About Universal Save Converter (USC)
 
 Currently, Universal Save Converter is a tool to convert N64 saves files for transfer between emulators and/or real N64 hardware.
 I do aim to continue working on this project to bring over all the main system save file conversion one at a time, I am currently focusing on the GUI, which is taking longer than i want. Once done the GUI will be modular for the different systems (mostly)
@@ -106,5 +115,6 @@ Original source: [Archive.org](https://archive.org/details/console-logos-profess
 All videogame and computer system logos used are the property of their respective Developers/Producers/Distributors/Licensors.
 
 All logos were taken from [Dan Patrick's set](https://archive.org/details/console-logos-professionally-redrawn-plus-official-versions). (Thanks for the great work).
+
 
 
