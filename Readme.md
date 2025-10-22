@@ -85,20 +85,20 @@ after a save file has been converted with this program (output target set to Wii
  * I noticed that SRAM saves created by Everdrive64 use the extention (.srm) instead of (.sra). No big deal. Just don't confuse those (.srm) saves with Retroarch saves which also use the (.srm) extension.
  * Wii64/not64 cannot read 4Kbit EEPROM saves at .5 kilobytes. The 4Kbit EEPROM must be padded to 2 kilobytes (i.e. the same size as 16Kbit EEPROM). Also Wii64 cannot read Controller Pak saves at 32 kilobytes. They must be padded to 128 kilobytes (i.e. 4x the size. It assumes a controller pak for each of the 4 controllers? Just my guess). This app takes care of all that for you.
 
+# About
+=
 
+These are console logos professionally redrawn + official logos
 
+This repository is a kind of "mirror" of [Dan Patrick's logo set](https://archive.org/details/console-logos-professionally-redrawn-plus-official-versions). 
 
+Original source: [Archive.org](https://archive.org/details/console-logos-professionally-redrawn-plus-official-versions).
 
+<br>
 
+# License
+=
 
+All videogame and computer system logos used are the property of their respective Developers/Producers/Distributors/Licensors.
 
-
-
-
-
-
-
-
-
-
-
+All logos were taken from [Dan Patrick's set](https://archive.org/details/console-logos-professionally-redrawn-plus-official-versions). (Thanks for the great work).
