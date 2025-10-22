@@ -23,6 +23,10 @@ Currently, Universal Save Converter is a tool to convert N64 saves files for tra
 I do aim to continue working on this project to bring over all the main system save file conversion one at a time, I am currently focusing on the GUI, which is taking longer than i want. Once done the GUI will be modular for the different systems (mostly)
 
 
+# Please remember to always make a copy of your save, and back it up somewhere safe, before converting.
+I do not accept responsibility for corrupt saves, as this app is not yet complete and has not been tested
+
+
 # Currently, Unviversal Save Converter Usage
 
 
@@ -98,11 +102,12 @@ after a save file has been converted with this program (output target set to Wii
  * Wii64/not64 cannot read 4Kbit EEPROM saves at .5 kilobytes. The 4Kbit EEPROM must be padded to 2 kilobytes (i.e. the same size as 16Kbit EEPROM). Also Wii64 cannot read Controller Pak saves at 32 kilobytes. They must be padded to 128 kilobytes (i.e. 4x the size. It assumes a controller pak for each of the 4 controllers? Just my guess). This app takes care of all that for you.
 
 # Recognition and Thanks:
-A huge thanks to Daniel Falk, for the 'N64SaveConverterGui tool'.
+
+A huge thanks to Daniel Falk, for the [N64SaveConverterGui tool](https://github.com/Ninjiteu/N64SaveConverter).
 Whilst this is rewritten from the ground up, I was able to use your conversion logic work, to get me started.
 Thank You 🙏
 
-Here is a link to this repo: https://github.com/Ninjiteu/N64SaveConverter
+Here is a link to Daniel Falk's repo: https://github.com/Ninjiteu/N64SaveConverter
 
 
 Further to this, I wanted to recognise the 'PRO100BYTE Team' & 'TheDayG0ne' for your work on your professsionally redrawn conosle logos and official logos.
@@ -111,23 +116,13 @@ Work like this is what makes projects like mine here all the more professional l
 Here is a link to the logos repo: https://github.com/PRO100BYTE/console-logos
 
 
-
-
 This repository is a kind of "mirror" of [Dan Patrick's logo set](https://archive.org/details/console-logos-professionally-redrawn-plus-official-versions). 
 
 Original source: [Archive.org](https://archive.org/details/console-logos-professionally-redrawn-plus-official-versions).
 
-<br>
 
 # License
 
-
-All videogame and computer system logos used are the property of their respective Developers/Producers/Distributors/Licensors.
+All videogame and computer system logos used, are the property of their respective Developers/Producers/Distributors/Licensors.
 
 All logos were taken from [Dan Patrick's set](https://archive.org/details/console-logos-professionally-redrawn-plus-official-versions). (Thanks for the great work).
-
-
-
-
-
-
