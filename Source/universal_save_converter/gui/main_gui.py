@@ -473,17 +473,37 @@ class TopLevelGUI:
 
             return canvas
         else:
-            btn = text_button(
-                parent=self.current_frame,
+            # Fallback: text label with hover (like brand buttons)
+            lbl = tk.Label(
+                parent,
                 text=console_name,
-                command=lambda m=console_name: self._open_console_gui(m),
-                width=TEXT_BUTTON_WIDTH,
-                height=TEXT_BUTTON_HEIGHT,
-                bg=BASE_BUTTON_COLOR,       # consistent
-                fg=BUTTON_TEXT_COLOUR       # consistent
+                width=CONSOLE_BUTTON_SIZE[0] // 10,
+                height=CONSOLE_BUTTON_SIZE[1] // 20,
+                bg=BASE_BUTTON_COLOR,
+                fg=BUTTON_TEXT_COLOUR,
+                font=("Arial", 16, "bold"),
+                bd=0,
+                relief="flat",
+                anchor="center",
+                justify="center"
             )
-            add_hover(btn, BASE_BUTTON_COLOR, HOVER_BUTTON_COLOR)  # consistent hover
-            return btn
+
+            # Hover effect
+            def on_enter(e, l=lbl):
+                l.config(bg=HOVER_BUTTON_COLOR)
+            def on_leave(e, l=lbl):
+                l.config(bg=BASE_BUTTON_COLOR)
+
+            lbl.bind("<Enter>", on_enter)
+            lbl.bind("<Leave>", on_leave)
+            lbl.bind("<Button-1>", lambda e, c=console_name: self._open_console_gui(c))
+
+            # Store reference for theme updates
+            if not hasattr(self, "console_logo_labels"):
+                self.console_logo_labels = []
+            self.console_logo_labels.append(lbl)
+
+            return lbl
         
     # ---------------- Page Navigation ----------------
     def _next_page(self):
@@ -524,9 +544,18 @@ class TopLevelGUI:
             if total % 2 == 1 and idx == total - 1:
                 col = 1
                 columnspan = 2
+
             btn = self._console_button(parent, console)
-            btn.grid(row=row, column=col, columnspan=columnspan,
-                    padx=CONSOLE_LOGO_PADDING_X, pady=CONSOLE_LOGO_PADDING_Y, sticky="n")
+
+            # Use different padding for logos vs fallback buttons
+            if hasattr(btn, "console_name"):  # logo canvas
+                padx = CONSOLE_LOGO_PADDING_X
+                pady = CONSOLE_LOGO_PADDING_Y
+            else:  # fallback text button
+                padx = CONSOLE_BUTTON_PADDING_X
+                pady = CONSOLE_BUTTON_PADDING_Y
+
+            btn.grid(row=row, column=col, columnspan=columnspan, padx=padx, pady=pady, sticky="n")
 
         hover_bg = DARK_HOVER_BG_COLOR if self._current_theme == "dark" else LIGHT_HOVER_BG_COLOR
         arrow_colour = DARK_ARROW_COLOUR if self._current_theme == "dark" else LIGHT_ARROW_COLOUR
@@ -558,7 +587,7 @@ class TopLevelGUI:
             self.next_arrow.place(relx=1.0 + ARROW_HORIZONTAL_PADDING, rely=0.5, anchor="e")
             add_hover(self.next_arrow, parent.cget("bg"), hover_bg)
             self.next_arrow.bind("<Button-1>", lambda e: self._next_page())
-            
+                        
     # ---------------- Open Console GUI ----------------
     def _open_console_gui(self, console_name):
         gui_class = CONSOLE_GUI_MAP.get(console_name)
