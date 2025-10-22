@@ -113,7 +113,7 @@ Thank You 🙏
 
 
 Further to this, I wanted to recognise the 'PRO100BYTE Team', 'TheDayG0ne' and 'Daniel Patrick', for your work on your professsionally redrawn conosle logos and official logos.
-Work like this is what makes projects like mine here all the more professional looking, and keeps retro alive 🙏
+Work like this is what makes projects like these, all the more professional looking, and keeps retro alive 🙏
 
 'PRO100BYTE Team' & 'TheDayG0ne' repo: https://github.com/PRO100BYTE/console-logos
 
@@ -127,6 +127,7 @@ Work like this is what makes projects like mine here all the more professional l
 All videogame and computer system logos used, are the property of their respective Developers/Producers/Distributors/Licensors.
 
 All logos were taken from ['PRO100BYTE Team', 'TheDayG0ne'](https://github.com/PRO100BYTE/console-logos) & [Dan Patrick's](https://archive.org/details/console-logos-professionally-redrawn-plus-official-versions) set. (Huge Thanks 🙏)
+
 
 
 
