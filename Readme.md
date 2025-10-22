@@ -126,7 +126,8 @@ Work like this is what makes projects like mine here all the more professional l
 
 All videogame and computer system logos used, are the property of their respective Developers/Producers/Distributors/Licensors.
 
-All logos were taken from [Dan Patrick's set](https://archive.org/details/console-logos-professionally-redrawn-plus-official-versions). (Thanks for the great work).
+All logos were taken from ['PRO100BYTE Team', 'TheDayG0ne'](https://github.com/PRO100BYTE/console-logos) & [Dan Patrick's set](https://archive.org/details/console-logos-professionally-redrawn-plus-official-versions). (Huge Thanks 🙏)
+
 
 
 
