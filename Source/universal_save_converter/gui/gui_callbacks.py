@@ -2,7 +2,7 @@
 
 import os
 from PIL import Image, ImageTk
-from core.theme_utils import BRAND_LOGOS, CONSOLE_LOGOS, DARK_HOVER_BG_COLOR, LIGHT_HOVER_BG_COLOR, BUTTON_TEXT_COLOUR
+from core.theme_utils import BRAND_LOGOS, CONSOLE_LOGOS, DARK_HOVER_BG_COLOUR, LIGHT_HOVER_BG_COLOUR, BUTTON_TEXT_COLOUR
 from .gui_constants import CONSOLE_LOGO_SIZE, LOGO_HOVER_SIZE
 import tkinter as tk
 
@@ -80,7 +80,7 @@ def add_logo_hover(widget, hover_bg="#2e2e2e", frame_size=None):
     resizing the widget or hiding its image.
 
     :param widget: The Label or Button to apply hover to.
-    :param hover_bg: The color to show on hover.
+    :param hover_bg: The colour to show on hover.
     :param frame_size: Tuple (width, height) to cover entire frame.
                        If None, defaults to widget size.
     """
