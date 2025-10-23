@@ -34,19 +34,24 @@ from .gui_constants import (
 )
 
 from .theme_constants import (
-    DARK_HOVER_BG_COLOUR, 
-    LIGHT_HOVER_BG_COLOUR, 
-    BUTTON_TEXT_COLOUR,
-    BASE_BUTTON_COLOUR,
-    HOVER_BUTTON_COLOUR,
     ARROW_FONT,
     DARK_ARROW_COLOUR,
     LIGHT_ARROW_COLOUR,
     DARK_GUI_TEXT_COLOUR,
     LIGHT_GUI_TEXT_COLOUR,
     BACK_BUTTON_FONT,
-    BASE_LOGO_COLOUR,
-    HOVER_LOGO_COLOUR,
+    DARK_BASE_LOGO_COLOUR,
+    LIGHT_BASE_LOGO_COLOUR,
+    DARK_HOVER_LOGO_COLOUR,
+    LIGHT_HOVER_LOGO_COLOUR,
+    LIGHT_BASE_BUTTON_COLOUR,
+    LIGHT_HOVER_BUTTON_COLOUR,
+    LIGHT_BUTTON_TEXT_COLOUR,
+    DARK_BASE_BUTTON_COLOUR,
+    DARK_HOVER_BUTTON_COLOUR,
+    DARK_BUTTON_TEXT_COLOUR,
+    DARK_GUI_BACKGROUND_COLOUR,
+    LIGHT_GUI_BACKGROUND_COLOUR,
 )
 
 from core.theme_utils import (
@@ -104,7 +109,7 @@ class TopLevelGUI:
 
         # Hover effect
         def on_enter(e):
-            lbl.config(bg=HOVER_BUTTON_COLOUR)
+            lbl.config(bg=DARK_HOVER_BUTTON_COLOUR if self._current_theme == "dark" else LIGHT_HOVER_BUTTON_COLOUR)
         def on_leave(e):
             lbl.config(bg=bg)
 
@@ -132,7 +137,7 @@ class TopLevelGUI:
             text="Universal Save Converter" if not self.logo_img else "",
             font=("Arial", 20, "bold"),
             compound="top",
-            fg=BUTTON_TEXT_COLOUR,
+            fg=DARK_BUTTON_TEXT_COLOUR if self._current_theme == "dark" else LIGHT_BUTTON_TEXT_COLOUR,
             bg=self.logo_frame.cget("bg")
         ).pack()
 
@@ -164,8 +169,8 @@ class TopLevelGUI:
             text="Back",
             width=BACK_BUTTON_SIZE[0] // 10,
             height=BACK_BUTTON_SIZE[1] // 20,
-            bg=BASE_BUTTON_COLOUR,
-            fg=BUTTON_TEXT_COLOUR,
+            bg=DARK_BASE_BUTTON_COLOUR if self._current_theme == "dark" else LIGHT_BASE_BUTTON_COLOUR,
+            fg=DARK_BUTTON_TEXT_COLOUR if self._current_theme == "dark" else LIGHT_BUTTON_TEXT_COLOUR,
             font=BACK_BUTTON_FONT,
             bd=0,               # remove border
             relief="flat"
@@ -173,18 +178,18 @@ class TopLevelGUI:
 
         # Hover effect
         def on_enter(e, b=btn):
-            b.config(bg=HOVER_BUTTON_COLOUR)
+            b.config(bg=DARK_HOVER_BUTTON_COLOUR if self._current_theme == "dark" else LIGHT_HOVER_BUTTON_COLOUR)
         def on_leave(e, b=btn):
-            b.config(bg=BASE_BUTTON_COLOUR)
+            b.config(bg=DARK_BASE_BUTTON_COLOUR if self._current_theme == "dark" else LIGHT_BASE_BUTTON_COLOUR)
 
         btn.bind("<Enter>", on_enter)
         btn.bind("<Leave>", on_leave)
 
         # Click effect
         def on_click(e):
-            btn.config(bg=HOVER_BUTTON_COLOUR)
+            btn.config(bg=DARK_HOVER_BUTTON_COLOUR if self._current_theme == "dark" else LIGHT_HOVER_BUTTON_COLOUR)
             command()
-            btn.config(bg=BASE_BUTTON_COLOUR)
+            btn.config(bg=DARK_BASE_BUTTON_COLOUR if self._current_theme == "dark" else LIGHT_BASE_BUTTON_COLOUR)
 
         btn.bind("<Button-1>", on_click)
 
@@ -212,7 +217,7 @@ class TopLevelGUI:
             return
 
         theme = "dark" if is_dark_mode() else "light"
-        bg_colour = "#000" if theme == "dark" else "#fff"
+        bg_colour = DARK_BASE_LOGO_COLOUR if theme == "dark" else LIGHT_BASE_LOGO_COLOUR
 
         # --- Brand logos ---
         for widget in self.current_frame.winfo_children():
@@ -244,7 +249,7 @@ class TopLevelGUI:
 
         # --- Update arrows safely ---
         arrow_colour = DARK_ARROW_COLOUR if self._current_theme == "dark" else LIGHT_ARROW_COLOUR
-        hover_bg = DARK_HOVER_BG_COLOUR if self._current_theme == "dark" else LIGHT_HOVER_BG_COLOUR
+        hover_bg = DARK_HOVER_BUTTON_COLOUR if self._current_theme == "dark" else LIGHT_HOVER_BUTTON_COLOUR
         bg = self.current_frame.cget("bg")
         
         if hasattr(self, "prev_arrow") and self.prev_arrow and self.prev_arrow.winfo_exists():
@@ -345,8 +350,8 @@ class TopLevelGUI:
 
             img = self.all_logos.get(manu, {}).get(self._current_theme)
             if img:
-                bg_colour = self.current_frame.cget("bg") or ("#000" if self._current_theme == "dark" else "#fff")
-                hover_bg = DARK_HOVER_BG_COLOUR if self._current_theme == "dark" else LIGHT_HOVER_BG_COLOUR
+                bg_colour = DARK_BASE_LOGO_COLOUR if self._current_theme == "dark" else LIGHT_BASE_LOGO_COLOUR
+                hover_bg = DARK_HOVER_LOGO_COLOUR if self._current_theme == "dark" else LIGHT_HOVER_LOGO_COLOUR
 
                 canvas = tk.Canvas(
                     self.current_frame,
@@ -384,8 +389,8 @@ class TopLevelGUI:
                     command=lambda m=manu: self.show_brands_gui(m),
                     width=BRAND_BUTTON_SIZE[0] // 10,
                     height=BRAND_BUTTON_SIZE[1] // 20,
-                    bg=BASE_BUTTON_COLOUR,
-                    fg=BUTTON_TEXT_COLOUR,
+                    bg=DARK_BASE_BUTTON_COLOUR if self._current_theme == "dark" else LIGHT_BASE_BUTTON_COLOUR,
+                    fg=DARK_BUTTON_TEXT_COLOUR if self._current_theme == "dark" else LIGHT_BUTTON_TEXT_COLOUR,
                     font=("Arial", 25, "bold")
                 )
                 lbl.grid(
@@ -442,8 +447,8 @@ class TopLevelGUI:
     def _console_button(self, parent, console_name):
         logos = self.console_logos.get(console_name, {}).get(self._current_theme, {})
         normal_img = logos.get("normal")
-        hover_bg = HOVER_LOGO_COLOUR
-        base_bg = BASE_LOGO_COLOUR
+        hover_bg = DARK_HOVER_LOGO_COLOUR if self._current_theme == "dark" else LIGHT_HOVER_LOGO_COLOUR
+        base_bg = DARK_BASE_LOGO_COLOUR if self._current_theme == "dark" else LIGHT_BASE_LOGO_COLOUR
 
         if normal_img:
             canvas = tk.Canvas(
@@ -487,8 +492,8 @@ class TopLevelGUI:
                 text=console_name,
                 width=CONSOLE_BUTTON_SIZE[0] // 10,
                 height=CONSOLE_BUTTON_SIZE[1] // 20,
-                bg=BASE_BUTTON_COLOUR,
-                fg=BUTTON_TEXT_COLOUR,
+                bg=DARK_BASE_BUTTON_COLOUR if self._current_theme == "dark" else LIGHT_BASE_BUTTON_COLOUR,
+                fg=DARK_BUTTON_TEXT_COLOUR if self._current_theme == "dark" else LIGHT_BUTTON_TEXT_COLOUR,
                 font=("Arial", 16, "bold"),
                 bd=0,
                 relief="flat",
@@ -498,9 +503,9 @@ class TopLevelGUI:
 
             # Hover effect
             def on_enter(e, l=lbl):
-                l.config(bg=HOVER_BUTTON_COLOUR)
+                l.config(bg=DARK_HOVER_BUTTON_COLOUR if self._current_theme == "dark" else LIGHT_HOVER_BUTTON_COLOUR)
             def on_leave(e, l=lbl):
-                l.config(bg=BASE_BUTTON_COLOUR)
+                l.config(bg=DARK_BASE_BUTTON_COLOUR if self._current_theme == "dark" else LIGHT_BASE_BUTTON_COLOUR)
 
             lbl.bind("<Enter>", on_enter)
             lbl.bind("<Leave>", on_leave)
@@ -565,7 +570,7 @@ class TopLevelGUI:
 
             btn.grid(row=row, column=col, columnspan=columnspan, padx=padx, pady=pady, sticky="n")
 
-        hover_bg = DARK_HOVER_BG_COLOUR if self._current_theme == "dark" else LIGHT_HOVER_BG_COLOUR
+        hover_bg = DARK_HOVER_BUTTON_COLOUR if self._current_theme == "dark" else LIGHT_HOVER_BUTTON_COLOUR
         arrow_colour = DARK_ARROW_COLOUR if self._current_theme == "dark" else LIGHT_ARROW_COLOUR
 
         if self.current_page_index > 0:
@@ -631,8 +636,8 @@ class TopLevelGUI:
             text="Back",
             width=BACK_BUTTON_SIZE[0] // 10,
             height=BACK_BUTTON_SIZE[1] // 20,
-            bg=BASE_BUTTON_COLOUR,
-            fg=BUTTON_TEXT_COLOUR,
+            bg=DARK_BASE_BUTTON_COLOUR if self._current_theme == "dark" else LIGHT_BASE_BUTTON_COLOUR,
+            fg=DARK_BUTTON_TEXT_COLOUR if self._current_theme == "dark" else LIGHT_BUTTON_TEXT_COLOUR,
             font=BACK_BUTTON_FONT,
             bd=0,
             relief="flat",
@@ -641,13 +646,13 @@ class TopLevelGUI:
         )
 
         def on_enter(e):
-            back_btn.config(bg=HOVER_BUTTON_COLOUR)
+            back_btn.config(bg=DARK_HOVER_BUTTON_COLOUR if self._current_theme == "dark" else LIGHT_HOVER_BUTTON_COLOUR)
         def on_leave(e):
-            back_btn.config(bg=BASE_BUTTON_COLOUR)
+            back_btn.config(bg=DARK_BASE_BUTTON_COLOUR if self._current_theme == "dark" else LIGHT_BASE_BUTTON_COLOUR)
         def on_click(e):
-            back_btn.config(bg=HOVER_BUTTON_COLOUR)
+            back_btn.config(bg=DARK_HOVER_BUTTON_COLOUR if self._current_theme == "dark" else LIGHT_HOVER_BUTTON_COLOUR)
             self.show_brands_gui(self._current_manu)
-            back_btn.config(bg=BASE_BUTTON_COLOUR)
+            back_btn.config(bg=DARK_BASE_BUTTON_COLOUR if self._current_theme == "dark" else LIGHT_BASE_BUTTON_COLOUR)
 
         back_btn.bind("<Enter>", on_enter)
         back_btn.bind("<Leave>", on_leave)

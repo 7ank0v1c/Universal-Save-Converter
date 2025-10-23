@@ -1,20 +1,20 @@
 # gui/theme_constants.py
 
 # Button Colours
-#BASE_BUTTON_COLOUR = "#1e1e1e"  # normal background for all buttons
-BASE_BUTTON_COLOUR = "#2c3c3c"  # normal background for all buttons
-HOVER_BUTTON_COLOUR = "#2e2e2e"  # hover background
-#HOVER_BUTTON_COLOUR = "#3a4a4a"  # hover background
+DARK_BASE_BUTTON_COLOUR = "#1e1e1e"
+DARK_HOVER_BUTTON_COLOUR = "#2e3e3e"
+DARK_BUTTON_TEXT_COLOUR = "#ffffff"
+LIGHT_BASE_BUTTON_COLOUR = "#ffffff"
+LIGHT_HOVER_BUTTON_COLOUR = "#f2f2f2"
+LIGHT_BUTTON_TEXT_COLOUR = "#000000"
+
 BUTTON_TEXT_COLOUR = "#ffffff"
 
-
 # Logo Colours
-BASE_LOGO_COLOUR = "#2c3c3c"
-HOVER_LOGO_COLOUR = "#2e2e2e"
-DARK_BASE_LOGO_COLOUR = "#1e1e1e"
-LIGHT_BASE_LOGO_COLOUR = "#000000"
+DARK_BASE_LOGO_COLOUR = "#3e3e3e"
 DARK_HOVER_LOGO_COLOUR = "#2e2e2e"
-LIGHT_HOVER_LOGO_COLOUR = "#333333"
+LIGHT_BASE_LOGO_COLOUR = "#ffffff"
+LIGHT_HOVER_LOGO_COLOUR = "#f2f2f2"
 
 # Arrow Colours
 ARROW_FONT = ("Arial", 50, "bold")
@@ -32,3 +32,20 @@ LIGHT_HOVER_BG_COLOUR = "#f2f2f2"
 # GUI Text Colours
 DARK_GUI_TEXT_COLOUR= "#ffffff"
 LIGHT_GUI_TEXT_COLOUR = "#000000"
+
+# GUI Background Colours
+DARK_GUI_BACKGROUND_COLOUR = "#000000"
+LIGHT_GUI_BACKGROUND_COLOUR = "#ffffff"
+
+
+# - Begging of new themes (unused) -
+DARK_GREEN_THEME = {
+    "BASE_BUTTON_COLOUR": "#2c3c3c",
+    "HOVER_BUTTON_COLOUR": "#3a4a4a",
+    "BUTTON_TEXT_COLOUR": "#ffffff",
+}
+
+
+
+
+#hover_bg = DARK_BASE_BUTTON_COLOUR if self._current_theme == "dark" else LIGHT_BASE_BUTTON_COLOUR

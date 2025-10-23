@@ -3,7 +3,6 @@
 import os
 from PIL import Image, ImageTk
 from core.theme_utils import BRAND_LOGOS, CONSOLE_LOGOS
-from .theme_constants import DARK_HOVER_BG_COLOUR, LIGHT_HOVER_BG_COLOUR, BUTTON_TEXT_COLOUR
 from .gui_constants import CONSOLE_LOGO_SIZE
 import tkinter as tk
 
@@ -81,12 +80,6 @@ def center_window(win, width, height):
     x = (win.winfo_screenwidth() - width) // 2
     y = (win.winfo_screenheight() - height) // 2
     win.geometry(f"{width}x{height}+{x}+{y}")
-
-def text_button(parent, text, command, width=15, height=2, bg="#3A5C8A", fg=BUTTON_TEXT_COLOUR):
-    return tk.Button(parent, text=text, width=width, height=height, bg=bg, fg=fg, command=command, relief="flat")
-
-def back_button(parent, command, width=10, height=1, bg="#3A5C8A", fg=BUTTON_TEXT_COLOUR):
-    return tk.Button(parent, text="Back", width=width, height=height, bg=bg, fg=fg, command=command, relief="flat")
 
 def create_pages(items, per_page=6):
     return [items[i:i + per_page] for i in range(0, len(items), per_page)]
