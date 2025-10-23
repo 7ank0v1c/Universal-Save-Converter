@@ -24,8 +24,6 @@ from .gui_constants import (
     CONSOLE_BUTTON_PADDING_Y,
     BRAND_BUTTON_SIZE,
     CONSOLE_BUTTON_SIZE,
-    TEXT_BUTTON_WIDTH,
-    TEXT_BUTTON_HEIGHT,
     ARROW_BUTTON_WIDTH,
     ARROW_BUTTON_HEIGHT,
     ARROW_HORIZONTAL_PADDING,
@@ -49,7 +47,8 @@ from core.theme_utils import (
     BRAND_LOGOS,
     CONSOLE_LOGOS,
     BACK_BUTTON_FONT,
-
+    BASE_LOGO_COLOUR,
+    HOVER_LOGO_COLOUR,
 )
 
 DEFAULT_WIDTH = 1000
@@ -441,8 +440,8 @@ class TopLevelGUI:
     def _console_button(self, parent, console_name):
         logos = self.console_logos.get(console_name, {}).get(self._current_theme, {})
         normal_img = logos.get("normal")
-        hover_bg = HOVER_BUTTON_COLOUR
-        base_bg = BASE_BUTTON_COLOUR
+        hover_bg = HOVER_LOGO_COLOUR
+        base_bg = BASE_LOGO_COLOUR
 
         if normal_img:
             canvas = tk.Canvas(
