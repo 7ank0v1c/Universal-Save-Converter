@@ -2,18 +2,17 @@
 
 import os
 import tkinter as tk
-from tkinter import Frame, Label, Button
+from tkinter import Frame, Label
 
 # --- GUI Helpers ---
 from .gui_utils import center_window, add_hover
-from .gui_callbacks import preload_brand_logos, preload_console_logos, add_logo_hover, text_button
+from .gui_callbacks import preload_brand_logos, preload_console_logos
 
 # --- Constants ---
 from .gui_constants import (
     BRANDS,
     CONSOLE_GUI_MAP,
     BRAND_LOGO_SIZE,
-    CONSOLE_LOGO_SIZE,
     CONSOLE_LOGO_PADDING_X,
     CONSOLE_LOGO_PADDING_Y,
     BRAND_LOGO_PADDING_X,
@@ -26,14 +25,15 @@ from .gui_constants import (
     CONSOLE_BUTTON_SIZE,
     ARROW_BUTTON_WIDTH,
     ARROW_BUTTON_HEIGHT,
-    ARROW_HORIZONTAL_PADDING,
+    ARROW_BUTTON_PADDING_X,
+    ARROW_BUTTON_PADDING_Y,
     CONSOLE_CANVAS_HEIGHT,
     CONSOLE_CANVAS_WIDTH,
     BRAND_BUTTON_SIZE,
     BACK_BUTTON_SIZE
 )
-from core.theme_utils import (
-    is_dark_mode, 
+
+from .theme_constants import (
     DARK_HOVER_BG_COLOUR, 
     LIGHT_HOVER_BG_COLOUR, 
     BUTTON_TEXT_COLOUR,
@@ -44,11 +44,13 @@ from core.theme_utils import (
     LIGHT_ARROW_COLOUR,
     DARK_GUI_TEXT_COLOUR,
     LIGHT_GUI_TEXT_COLOUR,
-    BRAND_LOGOS,
-    CONSOLE_LOGOS,
     BACK_BUTTON_FONT,
     BASE_LOGO_COLOUR,
     HOVER_LOGO_COLOUR,
+)
+
+from core.theme_utils import (
+    is_dark_mode, 
 )
 
 DEFAULT_WIDTH = 1000
@@ -576,7 +578,7 @@ class TopLevelGUI:
                 height=ARROW_BUTTON_HEIGHT,
                 width=ARROW_BUTTON_WIDTH
             )
-            self.prev_arrow.place(relx=0.00 - ARROW_HORIZONTAL_PADDING, rely=0.5, anchor="w")
+            self.prev_arrow.place(relx=0.00 - ARROW_BUTTON_PADDING_X, rely=0.5 + ARROW_BUTTON_PADDING_Y, anchor="w")
             add_hover(self.prev_arrow, parent.cget("bg"), hover_bg)
             self.prev_arrow.bind("<Button-1>", lambda e: self._prev_page())
 
@@ -590,7 +592,7 @@ class TopLevelGUI:
                 height=ARROW_BUTTON_HEIGHT,
                 width=ARROW_BUTTON_WIDTH
             )
-            self.next_arrow.place(relx=1.0 + ARROW_HORIZONTAL_PADDING, rely=0.5, anchor="e")
+            self.next_arrow.place(relx=1.0 + ARROW_BUTTON_PADDING_X, rely=0.5 + ARROW_BUTTON_PADDING_Y, anchor="e")
             add_hover(self.next_arrow, parent.cget("bg"), hover_bg)
             self.next_arrow.bind("<Button-1>", lambda e: self._next_page())
                         

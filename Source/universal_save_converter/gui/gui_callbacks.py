@@ -2,8 +2,9 @@
 
 import os
 from PIL import Image, ImageTk
-from core.theme_utils import BRAND_LOGOS, CONSOLE_LOGOS, DARK_HOVER_BG_COLOUR, LIGHT_HOVER_BG_COLOUR, BUTTON_TEXT_COLOUR
-from .gui_constants import CONSOLE_LOGO_SIZE, LOGO_HOVER_SIZE
+from core.theme_utils import BRAND_LOGOS, CONSOLE_LOGOS
+from .theme_constants import DARK_HOVER_BG_COLOUR, LIGHT_HOVER_BG_COLOUR, BUTTON_TEXT_COLOUR
+from .gui_constants import CONSOLE_LOGO_SIZE
 import tkinter as tk
 
 def resize_preserve_aspect_ratio(img: Image.Image, max_size):
@@ -27,14 +28,12 @@ def preload_console_logos(console_logos):
                 os.path.dirname(__file__),
                 "..", "resources", "console_logos", folder, filename
             )
-            console_logos[console][theme] = {"normal": None, "hover": None}
+            console_logos[console][theme] = {"normal": None}
             if os.path.exists(path):
                 try:
                     img = Image.open(path).convert("RGBA")
                     resized_img = resize_preserve_aspect_ratio(img, CONSOLE_LOGO_SIZE)
                     console_logos[console][theme]["normal"] = ImageTk.PhotoImage(resized_img)
-                    hover_img = resize_preserve_aspect_ratio(img, LOGO_HOVER_SIZE)
-                    console_logos[console][theme]["hover"] = ImageTk.PhotoImage(hover_img)
                 except Exception as e:
                     print(f"Failed to load {filename} for {console}: {e}")
             else:
@@ -71,36 +70,6 @@ def add_hover(widget, base_bg, hover_bg):
             widget.config(bg=base_bg, activebackground=base_bg)
         except tk.TclError:
             widget.config(bg=base_bg)
-    widget.bind("<Enter>", on_enter)
-    widget.bind("<Leave>", on_leave)
-
-def add_logo_hover(widget, hover_bg="#2e2e2e", frame_size=None):
-    """
-    Adds a hover effect to a widget, highlighting its background without
-    resizing the widget or hiding its image.
-
-    :param widget: The Label or Button to apply hover to.
-    :param hover_bg: The colour to show on hover.
-    :param frame_size: Tuple (width, height) to cover entire frame.
-                       If None, defaults to widget size.
-    """
-    original_bg = widget.cget("bg")
-    
-    # If frame_size provided, use it; else use widget width/height
-    w = frame_size[0] if frame_size else widget.winfo_reqwidth()
-    h = frame_size[1] if frame_size else widget.winfo_reqheight()
-
-    # Create overlay frame
-    overlay = tk.Frame(widget.master, width=w, height=h, bg=hover_bg)
-    overlay.place(x=widget.winfo_x(), y=widget.winfo_y())
-    overlay.lower(widget)  # Ensure the widget image stays on top
-    overlay.place_forget()  # Hide initially
-
-    def on_enter(e):
-        overlay.place(x=widget.winfo_x(), y=widget.winfo_y())
-    def on_leave(e):
-        overlay.place_forget()
-
     widget.bind("<Enter>", on_enter)
     widget.bind("<Leave>", on_leave)
 
