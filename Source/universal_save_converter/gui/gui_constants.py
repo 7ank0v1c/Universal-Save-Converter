@@ -18,19 +18,19 @@ BRANDS = {
         "Nintendo DS / DSi",
         "Nintendo 3DS"
     ],
-    "SEGA": [
-        "Sega Master System",
-        "Sega Genesis/Megadrive",
-        "Sega Saturn",
-        "Sega Dreamcast",
-        "Sega GameGear"
-    ],
     "PlayStation": [
         "PlayStation 1",
         "PlayStation 2",
         "PlayStation 3",
         "PlayStation Portable",
         "PlayStation Vita"
+    ],
+        "SEGA": [
+        "Sega Master System",
+        "Sega Genesis/Megadrive",
+        "Sega Saturn",
+        "Sega Dreamcast",
+        "Sega GameGear"
     ],
     "XBOX": [
         "Xbox",
@@ -71,7 +71,7 @@ CONSOLE_GUI_MAP = {
 }
 
 # Logo Size
-BRAND_LOGO_SIZE = (300, 80)
+BRAND_LOGO_SIZE = (320, 50)
 CONSOLE_LOGO_SIZE = (250, 55)
 LOGO_HOVER_SIZE = (300, 80) # could confuse, try remove this later
 
@@ -83,10 +83,11 @@ ARROW_BUTTON_WIDTH = 2
 ARROW_BUTTON_HEIGHT = 3
 
 # Logo Padding
-BRAND_LOGO_PADDING_X = 10   #horizontal
-BRAND_LOGO_PADDING_Y = 22   #vertical
+BRAND_LOGO_PADDING_X = 5   #horizontal
+BRAND_LOGO_PADDING_Y = 9   #vertical
 CONSOLE_LOGO_PADDING_X = 5   #horizontal
 CONSOLE_LOGO_PADDING_Y = 6   #vertical
+CONSOLE_TOP_BRAND_PADDING_Y = (1, 15)   #vertical
 
 # Button Padding
 BRAND_BUTTON_PADDING_X = 10   #horizontal
@@ -96,9 +97,11 @@ CONSOLE_BUTTON_PADDING_Y = 8   #vertical
 ARROW_BUTTON_PADDING_X = 0.02  #horizontal
 ARROW_BUTTON_PADDING_Y = 0.03   #vertical
  
+# Actual Size of Canvases (rectangle behind logos) 
+BRAND_CANVAS_WIDTH  = BRAND_LOGO_SIZE[0] + BRAND_LOGO_PADDING_X * 10  # width
+BRAND_CANVAS_HEIGHT = BRAND_LOGO_SIZE[1] + BRAND_LOGO_PADDING_Y * 5  # height
 CONSOLE_CANVAS_WIDTH = CONSOLE_LOGO_SIZE[0] + CONSOLE_LOGO_PADDING_X * 20  # width
 CONSOLE_CANVAS_HEIGHT = CONSOLE_LOGO_SIZE[1] + CONSOLE_LOGO_PADDING_Y * 4  # height
-
 
 
 

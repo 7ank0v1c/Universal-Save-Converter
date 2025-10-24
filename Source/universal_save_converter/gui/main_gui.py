@@ -27,9 +27,12 @@ from .gui_constants import (
     ARROW_BUTTON_HEIGHT,
     ARROW_BUTTON_PADDING_X,
     ARROW_BUTTON_PADDING_Y,
+    BRAND_CANVAS_HEIGHT,
+    BRAND_CANVAS_WIDTH,
     CONSOLE_CANVAS_HEIGHT,
     CONSOLE_CANVAS_WIDTH,
     BACK_BUTTON_SIZE,
+    CONSOLE_TOP_BRAND_PADDING_Y
 )
 
 from .theme_constants import (
@@ -363,22 +366,25 @@ class TopLevelGUI:
 
             # Brand logos / buttons (brands page)
             if hasattr(widget, "brand_name") and getattr(widget, "_is_brand_button", False):
-                # Directly get the PhotoImage for current theme
                 logo = self.all_logos.get(widget.brand_name, {}).get(self._current_theme)
 
                 if logo and isinstance(widget, tk.Canvas):
                     widget.delete("all")
+
+                    # Use actual canvas size (fallback to BRAND_LOGO_SIZE if not yet realized)
+                    width = widget.winfo_width() or BRAND_LOGO_SIZE[0]
+                    height = widget.winfo_height() or BRAND_LOGO_SIZE[1]
+
                     # Draw background rectangle
                     rect_id = widget.create_rectangle(
-                        0, 0, BRAND_LOGO_SIZE[0], BRAND_LOGO_SIZE[1],
+                        0, 0, width, height,
                         fill=self.colours["base_logo"],
                         outline=""
                     )
                     widget._bg_rect_id = rect_id
 
-                    # Place the logo
-                    widget.create_image(BRAND_LOGO_SIZE[0] // 2, BRAND_LOGO_SIZE[1] // 2,
-                                        anchor="center", image=logo)
+                    # Place the logo centered
+                    widget.create_image(width // 2, height // 2, anchor="center", image=logo)
                     widget.image = logo
 
                     # Bind hover
@@ -497,7 +503,6 @@ class TopLevelGUI:
         self.console_logo_labels = []  # clear stored references
         self._polling_active = True
 
-    # ---------------- Brands Selection ----------------
     def show_brands_selection(self):
         self._clear_frame()
         self.current_frame = Frame(self.root, bg=self.colours["bg"])
@@ -511,7 +516,7 @@ class TopLevelGUI:
             fg=self.colours["text"],
             bg=self.colours["bg"]
         )
-        title_lbl._no_hover = True  # <-- mark it
+        title_lbl._no_hover = True
         title_lbl.grid(row=0, column=0, columnspan=4, pady=(20, 30))
 
         # Configure grid columns
@@ -529,15 +534,16 @@ class TopLevelGUI:
                 col = 1
                 columnspan = 2
 
-            img = self.all_logos.get(manu, {}).get(self._current_theme)
+            logo_img = self.all_logos.get(manu, {}).get(self._current_theme)
 
-            if img:
+            if logo_img:
+                # Use canvas same style as console logos
                 canvas = tk.Canvas(
                     self.current_frame,
-                    width=BRAND_LOGO_SIZE[0],
-                    height=BRAND_LOGO_SIZE[1],
+                    width=BRAND_CANVAS_WIDTH,
+                    height=BRAND_CANVAS_HEIGHT,
                     highlightthickness=0,
-                    bg=self.colours["bg"],  # base background same as root
+                    bg=self.colours["bg"]
                 )
                 canvas.grid(
                     row=row,
@@ -548,21 +554,21 @@ class TopLevelGUI:
                     sticky="n"
                 )
 
-                # Draw background rectangle for hover effect
+                # Background rectangle for hover
                 rect_id = canvas.create_rectangle(
-                    0, 0, BRAND_LOGO_SIZE[0], BRAND_LOGO_SIZE[1],
+                    0, 0, BRAND_CANVAS_WIDTH, BRAND_CANVAS_HEIGHT,
                     fill=self.colours["base_logo"], outline=""
                 )
                 canvas._bg_rect_id = rect_id
 
-                # Place the logo
-                canvas.create_image(BRAND_LOGO_SIZE[0] // 2, BRAND_LOGO_SIZE[1] // 2, anchor="center", image=img)
-                canvas.image = img
+                # Place the logo centered
+                canvas.create_image(BRAND_CANVAS_WIDTH // 2, BRAND_CANVAS_HEIGHT // 2,
+                                    anchor="center", image=logo_img)
+                canvas.image = logo_img
 
-                # Store reference to all theme images for future theme refresh
+                # Store reference for theme refresh
                 canvas.brand_name = manu
                 canvas._is_brand_button = True
-                canvas._theme_images = img
 
                 # Hover effect
                 def on_enter(e, c=canvas):
@@ -573,8 +579,9 @@ class TopLevelGUI:
                 canvas.bind("<Enter>", on_enter)
                 canvas.bind("<Leave>", on_leave)
                 canvas.bind("<Button-1>", lambda e, m=manu: self.show_brands_gui(m))
-                
+
             else:
+                # Fallback text button
                 lbl = self.text_label(
                     parent=self.current_frame,
                     text=manu,
@@ -594,12 +601,10 @@ class TopLevelGUI:
                     sticky="n"
                 )
 
-                # Mark for theme refresh
                 lbl.brand_name = manu
-                lbl._is_brand_button = True  # <-- mark as brand button
-
+                lbl._is_brand_button = True
                 self.brands_labels[manu] = lbl
-
+                
     # ---------------- Brands GUI ----------------
     def show_brands_gui(self, manu):
         self._current_manu = manu
@@ -613,7 +618,7 @@ class TopLevelGUI:
             manu_label.image = logo_img
             manu_label._no_hover = True
             manu_label.brand_name = manu
-            manu_label.grid(row=0, column=0, columnspan=4, pady=(1, 20))
+            manu_label.grid(row=0, column=0, columnspan=4, pady=CONSOLE_TOP_BRAND_PADDING_Y)
             self.console_manu_label = manu_label
         else:
             manu_label = Label(
