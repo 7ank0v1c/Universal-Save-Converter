@@ -22,12 +22,16 @@ This is a work in progress and a while off from being functional, the only save 
 Currently, Universal Save Converter is a tool to convert N64 saves files for transfer between emulators and/or real N64 hardware.
 I do aim to continue working on this project to bring over all the main system save file conversion one at a time, I am currently focusing on the GUI, which is taking longer than i want. Once done the GUI will be modular for the different systems (mostly)
 
+
 # 
+
 
 # Please remember to always make a copy of your save, and back it up somewhere safe, before converting.
 I do not accept responsibility for corrupt saves, as this app is not yet complete and has not been tested
 
+
 # 
+
 
 # Currently, Unviversal Save Converter Usage
 
@@ -127,6 +131,7 @@ Work like this is what makes projects like these, all the more professional look
 All videogame and computer system logos used, are the property of their respective Developers/Producers/Distributors/Licensors.
 
 All logos were taken from ['PRO100BYTE Team', 'TheDayG0ne'](https://github.com/PRO100BYTE/console-logos) & [Dan Patrick's](https://archive.org/details/console-logos-professionally-redrawn-plus-official-versions) set. (Huge Thanks 🙏)
+
 
 
 
