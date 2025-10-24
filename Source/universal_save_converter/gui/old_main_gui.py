@@ -437,6 +437,8 @@ class TopLevelGUI:
                 arrow.config(bg=self.colours["base_btn"], fg=self.colours["arrow"])
                 add_hover(arrow, self.colours["base_btn"], self.colours["hover_btn"])
                 
+        
+        
     def _reactivate_hover_state(self):
         """Prevent premature hover activation at startup."""
         if not getattr(self, "_hover_initialized", False):
