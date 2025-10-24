@@ -69,9 +69,13 @@ class TopLevelGUI:
         bg_colour = self.colours["bg"]
         self.root.config(bg=bg_colour)
 
-        # Update current frame background
-        if self.current_frame and self.current_frame.winfo_exists():
-            self.current_frame.config(bg=bg_colour)
+        for child in self.root.winfo_children():
+            if isinstance(child, (tk.Frame, tk.Label, tk.Canvas)):
+                try:
+                    child.config(bg=bg_colour)
+                except Exception:
+                    pass
+
         return bg_colour
 
     def __init__(self):
@@ -85,22 +89,28 @@ class TopLevelGUI:
         self.all_logos = {}
         self.brands_labels = {}
         self._current_theme = "dark" if is_dark_mode() else "light"
-        self._apply_root_background()    
         self._current_manu = None
         self.console_manu_label = None
         self.pages = []
         self.current_page_index = 0
         self.prev_arrow = None
         self.next_arrow = None
+        self._hover_initialized = False
 
         preload_brand_logos(self.all_logos)
         preload_console_logos(self.console_logos)
 
         self._setup_logo()
         self.show_brands_selection()
+        self._apply_root_background()    
         self.root.bind("<FocusIn>", lambda e: self._reactivate_hover_state())
+        self.root.after(1000, self._mark_hover_ready)
         self.root.after(1000, self._poll_theme)
         self.root.mainloop()
+
+    def _mark_hover_ready(self):
+        """Allow hover reactivation only after first second of runtime."""
+        self._hover_initialized = True
 
     @property
     def colours(self):
@@ -147,7 +157,7 @@ class TopLevelGUI:
         def on_enter(e):
             lbl.config(bg=self.colours["hover_btn"])
         def on_leave(e):
-            lbl.config(bg=self.colours["bg"])
+            lbl.config(bg=self.colours["base_btn"])
 
         lbl.bind("<Enter>", on_enter)
         lbl.bind("<Leave>", on_leave)
@@ -157,10 +167,32 @@ class TopLevelGUI:
 
         return lbl
 
+    def bind_hover(widget, base_colour, hover_colour, rect_id=None):
+        """
+        Bind enter/leave hover effect to a widget.
+        If rect_id is provided, it refers to a canvas rectangle.
+        """
+        def on_enter(e):
+            if rect_id is not None:
+                widget.itemconfig(rect_id, fill=hover_colour)
+            else:
+                widget.config(bg=hover_colour)
+
+        def on_leave(e):
+            if rect_id is not None:
+                widget.itemconfig(rect_id, fill=base_colour)
+            else:
+                widget.config(bg=base_colour)
+
+        widget.bind("<Enter>", on_enter)
+        widget.bind("<Leave>", on_leave)
+
     def _apply_theme_to_current_frame(self):
-        """Reapply all colours and styles in the current frame when theme changes."""
+        """Apply theme colors and hover to all widgets in current frame, safely."""
         if not self.current_frame or not self.current_frame.winfo_exists():
             return
+        # Schedule actual refresh after the frame is realized
+        self.root.after_idle(self._refresh_logos_for_theme)
 
         def apply_recursive(widget):
             """Apply theme to this widget and its children."""
@@ -275,8 +307,31 @@ class TopLevelGUI:
         if not self.current_frame or not self.current_frame.winfo_exists():
             return
 
-        # Make whole window use background color
-        def apply_theme_recursive(widget):
+        # ---------------- Helper to bind hover ----------------
+        def bind_hover(widget, rect=None):
+            """Bind hover to a widget or canvas rectangle."""
+            base = self.colours["base_logo"] if rect else self.colours["base_btn"]
+            hover = self.colours["hover_logo"] if rect else self.colours["hover_btn"]
+
+            def on_enter(e, w=widget):
+                if rect:
+                    w.itemconfig(rect, fill=hover)
+                else:
+                    w.config(bg=hover)
+
+            def on_leave(e, w=widget):
+                if rect:
+                    w.itemconfig(rect, fill=base)
+                else:
+                    w.config(bg=base)
+
+            widget.unbind("<Enter>")
+            widget.unbind("<Leave>")
+            widget.bind("<Enter>", on_enter)
+            widget.bind("<Leave>", on_leave)
+
+        # ---------------- Recursive background update ----------------
+        def apply_bg_recursive(widget):
             if not widget.winfo_exists():
                 return
             try:
@@ -284,113 +339,108 @@ class TopLevelGUI:
             except Exception:
                 pass
             for child in widget.winfo_children():
-                apply_theme_recursive(child)
+                apply_bg_recursive(child)
 
-        apply_theme_recursive(self.root)
+        apply_bg_recursive(self.root)
         self.current_frame.config(bg=self.colours["bg"])
 
-        # --- Brand and Console logos + fallback text buttons ---
+        # ---------------- Update all widgets ----------------
         for widget in self.current_frame.winfo_children():
-            if not widget.winfo_exists():
+            # ---------------- Handle widgets marked _no_hover ----------------
+            if getattr(widget, "_no_hover", False):
+                widget.config(bg=self.colours["bg"], fg=self.colours["text"])
+                
+                # Special case: top brand/logo on console page
+                if widget == getattr(self, "console_manu_label", None):
+                    brand_name = self._current_manu
+                    if brand_name:
+                        # Get the theme-specific logo
+                        logo_img = self.all_logos.get(brand_name, {}).get(self._current_theme)
+                        if logo_img:
+                            widget.config(image=logo_img)
+                            widget.image = logo_img
                 continue
 
-            # Brand logo labels (image)
-            if isinstance(widget, tk.Label) and hasattr(widget, "brand_name"):
-                brand_name = widget.brand_name
-                logo = self.all_logos.get(brand_name, {}).get(self._current_theme, {}).get("normal")
-                if logo:
-                    widget.config(image=logo, bg=self.colours["base_logo"])
+            # Brand logos / buttons (brands page)
+            if hasattr(widget, "brand_name") and getattr(widget, "_is_brand_button", False):
+                # Directly get the PhotoImage for current theme
+                logo = self.all_logos.get(widget.brand_name, {}).get(self._current_theme)
+
+                if logo and isinstance(widget, tk.Canvas):
+                    widget.delete("all")
+                    # Draw background rectangle
+                    rect_id = widget.create_rectangle(
+                        0, 0, BRAND_LOGO_SIZE[0], BRAND_LOGO_SIZE[1],
+                        fill=self.colours["base_logo"],
+                        outline=""
+                    )
+                    widget._bg_rect_id = rect_id
+
+                    # Place the logo
+                    widget.create_image(BRAND_LOGO_SIZE[0] // 2, BRAND_LOGO_SIZE[1] // 2,
+                                        anchor="center", image=logo)
                     widget.image = logo
 
-            # Fallback text labels/buttons (brands or other labels)
-            elif isinstance(widget, tk.Label) and not hasattr(widget, "brand_name") and not hasattr(widget, "console_name"):
-                widget.config(bg=self.colours["base_btn"], fg=self.colours["btn_text"])
+                    # Bind hover
+                    def on_enter(e, c=widget):
+                        c.itemconfig(c._bg_rect_id, fill=self.colours["hover_logo"])
+                    def on_leave(e, c=widget):
+                        c.itemconfig(c._bg_rect_id, fill=self.colours["base_logo"])
+                    widget.bind("<Enter>", on_enter)
+                    widget.bind("<Leave>", on_leave)
 
-                # Rebind hover handlers using current colours
-                widget.unbind("<Enter>")
-                widget.unbind("<Leave>")
+                elif isinstance(widget, tk.Label):
+                    # fallback button
+                    widget.config(bg=self.colours["base_btn"], fg=self.colours["btn_text"])
+                    bind_hover(widget)
 
-                def _lbl_on_enter(e, w=widget):
-                    # Use current colours at time of event
-                    w.config(bg=self.colours["hover_btn"])
-                def _lbl_on_leave(e, w=widget):
-                    w.config(bg=self.colours["base_btn"])
-
-                widget.bind("<Enter>", _lbl_on_enter)
-                widget.bind("<Leave>", _lbl_on_leave)
-
-            # Console logo canvases
+            # Console logos (Canvas with console_name)
             elif isinstance(widget, tk.Canvas) and hasattr(widget, "console_name"):
                 console_name = widget.console_name
                 logo = self.console_logos.get(console_name, {}).get(self._current_theme, {}).get("normal")
 
-                # Clear and recreate background rectangle and image
-                widget.delete("all")
+                widget.delete("all")  # clear old items
+
+                # Draw background rectangle
                 rect_id = widget.create_rectangle(
-                    0, 0, widget.winfo_width() or CONSOLE_CANVAS_WIDTH, widget.winfo_height() or CONSOLE_CANVAS_HEIGHT,
+                    0, 0,
+                    widget.winfo_width() or CONSOLE_CANVAS_WIDTH,
+                    widget.winfo_height() or CONSOLE_CANVAS_HEIGHT,
                     fill=self.colours["base_logo"],
                     outline=""
                 )
                 widget._bg_rect_id = rect_id
 
+                # Draw logo image if available
                 if logo:
-                    widget.create_image(widget.winfo_width() // 2, widget.winfo_height() // 2, anchor="center", image=logo)
+                    widget.create_image(
+                        widget.winfo_width() // 2,
+                        widget.winfo_height() // 2,
+                        anchor="center",
+                        image=logo
+                    )
                     widget.image = logo
 
-                # Rebind hover handlers to update the rectangle fill
-                widget.unbind("<Enter>")
-                widget.unbind("<Leave>")
+                # Bind hover on rectangle
+                bind_hover(widget, rect=rect_id)
+                widget.unbind("<Button-1>")
+                widget.bind("<Button-1>", lambda e, c=console_name: self._open_console_gui(c))
 
-                def _canvas_on_enter(e, w=widget):
-                    rid = getattr(w, "_bg_rect_id", None)
-                    if rid is not None:
-                        try:
-                            w.itemconfig(rid, fill=self.colours["hover_logo"])
-                        except Exception:
-                            pass
-                def _canvas_on_leave(e, w=widget):
-                    rid = getattr(w, "_bg_rect_id", None)
-                    if rid is not None:
-                        try:
-                            w.itemconfig(rid, fill=self.colours["base_logo"])
-                        except Exception:
-                            pass
-
-                widget.bind("<Enter>", _canvas_on_enter)
-                widget.bind("<Leave>", _canvas_on_leave)
-
-            # Other labels (e.g. console fallback labels) — ensure they use colours and hover
-            elif isinstance(widget, tk.Label) and not hasattr(widget, "console_name"):
+            # Fallback Labels / Buttons
+            elif isinstance(widget, tk.Label):
                 widget.config(bg=self.colours["base_btn"], fg=self.colours["btn_text"])
+                bind_hover(widget)
 
-                widget.unbind("<Enter>")
-                widget.unbind("<Leave>")
-
-                def _lbl2_on_enter(e, w=widget):
-                    w.config(bg=self.colours["hover_btn"])
-                def _lbl2_on_leave(e, w=widget):
-                    w.config(bg=self.colours["base_btn"])
-
-                widget.bind("<Enter>", _lbl2_on_enter)
-                widget.bind("<Leave>", _lbl2_on_leave)
-
-        # --- Arrows ---
+        # ---------------- Update navigation arrows ----------------
         for arrow in (self.prev_arrow, self.next_arrow):
             if arrow and arrow.winfo_exists():
                 arrow.config(bg=self.colours["base_btn"], fg=self.colours["arrow"])
                 add_hover(arrow, self.colours["base_btn"], self.colours["hover_btn"])
-
-        # Finally, force a motion event on the widget under the pointer so hover becomes active immediately
-        self._reactivate_hover_state()
-
+                
     def _reactivate_hover_state(self):
-        """
-        Ensure hover handlers work after theme change, even if cursor is outside the window.
-        
-        Strategy:
-        - For every widget that has hover bindings, generate <Leave> + <Enter> + <Motion>.
-        - This simulates re-entering the widget, fixing macOS issue when theme changes.
-        """
+        """Prevent premature hover activation at startup."""
+        if not getattr(self, "_hover_initialized", False):
+            return  # 👈 skip during startup
         try:
             # Gather all potential hover widgets in the current frame
             def gather_hover_widgets(widget):
@@ -452,13 +502,15 @@ class TopLevelGUI:
         self.current_frame.pack(expand=True, fill="both")
 
         # Title
-        Label(
+        title_lbl = Label(
             self.current_frame,
             text="Which System Is Your Save For?",
             font=("Arial", 22, "bold"),
             fg=self.colours["text"],
             bg=self.colours["bg"]
-        ).grid(row=0, column=0, columnspan=4, pady=(20, 30))
+        )
+        title_lbl._no_hover = True  # <-- mark it
+        title_lbl.grid(row=0, column=0, columnspan=4, pady=(20, 30))
 
         # Configure grid columns
         for i in range(4):
@@ -476,13 +528,14 @@ class TopLevelGUI:
                 columnspan = 2
 
             img = self.all_logos.get(manu, {}).get(self._current_theme)
+
             if img:
                 canvas = tk.Canvas(
                     self.current_frame,
                     width=BRAND_LOGO_SIZE[0],
                     height=BRAND_LOGO_SIZE[1],
                     highlightthickness=0,
-                    bg=self.colours["base_logo"],
+                    bg=self.colours["bg"],  # base background same as root
                 )
                 canvas.grid(
                     row=row,
@@ -493,20 +546,32 @@ class TopLevelGUI:
                     sticky="n"
                 )
 
-                canvas.create_image(0, 0, anchor="nw", image=img)
-                canvas.image = img  # prevent GC
+                # Draw background rectangle for hover effect
+                rect_id = canvas.create_rectangle(
+                    0, 0, BRAND_LOGO_SIZE[0], BRAND_LOGO_SIZE[1],
+                    fill=self.colours["base_logo"], outline=""
+                )
+                canvas._bg_rect_id = rect_id
 
+                # Place the logo
+                canvas.create_image(BRAND_LOGO_SIZE[0] // 2, BRAND_LOGO_SIZE[1] // 2, anchor="center", image=img)
+                canvas.image = img
+
+                # Store reference to all theme images for future theme refresh
+                canvas.brand_name = manu
+                canvas._is_brand_button = True
+                canvas._theme_images = img
+
+                # Hover effect
                 def on_enter(e, c=canvas):
-                    c.config(bg=self.colours["hover_logo"])
+                    c.itemconfig(c._bg_rect_id, fill=self.colours["hover_logo"])
                 def on_leave(e, c=canvas):
-                    c.config(bg=self.colours["base_logo"])
+                    c.itemconfig(c._bg_rect_id, fill=self.colours["base_logo"])
 
                 canvas.bind("<Enter>", on_enter)
                 canvas.bind("<Leave>", on_leave)
                 canvas.bind("<Button-1>", lambda e, m=manu: self.show_brands_gui(m))
-
-                self.brands_labels[manu] = canvas
-
+                
             else:
                 lbl = self.text_label(
                     parent=self.current_frame,
@@ -526,6 +591,11 @@ class TopLevelGUI:
                     pady=BRAND_BUTTON_PADDING_Y,
                     sticky="n"
                 )
+
+                # Mark for theme refresh
+                lbl.brand_name = manu
+                lbl._is_brand_button = True  # <-- mark as brand button
+
                 self.brands_labels[manu] = lbl
 
     # ---------------- Brands GUI ----------------
@@ -539,6 +609,8 @@ class TopLevelGUI:
         if manu != "Other" and logo_img:
             manu_label = Label(self.current_frame, image=logo_img, bg=self.colours["bg"])
             manu_label.image = logo_img
+            manu_label._no_hover = True
+            manu_label.brand_name = manu
             manu_label.grid(row=0, column=0, columnspan=4, pady=(1, 20))
             self.console_manu_label = manu_label
         else:
@@ -549,6 +621,7 @@ class TopLevelGUI:
                 fg=self.colours["text"],
                 bg=self.colours["bg"]
             )
+            manu_label._no_hover = True
             manu_label.grid(row=0, column=0, columnspan=4, pady=(1, 20), sticky="n")
             self.console_manu_label = manu_label
 
@@ -749,13 +822,15 @@ class TopLevelGUI:
         self.current_frame.pack(expand=True, fill="both")
 
         # Label at the top
-        Label(
+        coming_lbl = Label(
             self.current_frame,
             text=f"{console_name} is Coming Soon...",
             font=("Arial", 24, "bold"),
             fg=self.colours["text"],
             bg=self.colours["bg"]
-        ).pack(anchor="n", pady=50)
+        )
+        coming_lbl._no_hover = True  # mark it to skip hover
+        coming_lbl.pack(anchor="n", pady=50)
 
         # Back button
         back_btn = Label(
