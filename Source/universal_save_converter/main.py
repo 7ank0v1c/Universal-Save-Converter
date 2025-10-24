@@ -1,6 +1,6 @@
 # main.py
 
-from gui.old_main_gui import TopLevelGUI
+from gui.main_gui import TopLevelGUI
 
 def main():
     TopLevelGUI()  # Launch the top-level console selection GUI

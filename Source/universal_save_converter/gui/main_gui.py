@@ -34,11 +34,11 @@ from .gui_constants import (
 
 from .theme_constants import (
     ARROW_FONT,
-    BACK_BUTTON_FONT,
     DARK_ARROW_COLOUR,
     LIGHT_ARROW_COLOUR,
     DARK_GUI_TEXT_COLOUR,
     LIGHT_GUI_TEXT_COLOUR,
+    BACK_BUTTON_FONT,
     DARK_BASE_LOGO_COLOUR,
     LIGHT_BASE_LOGO_COLOUR,
     DARK_HOVER_LOGO_COLOUR,
@@ -54,7 +54,7 @@ from .theme_constants import (
 )
 
 from core.theme_utils import (
-    is_dark_mode,
+    is_dark_mode, 
 )
 
 DEFAULT_WIDTH = 1000
@@ -69,6 +69,7 @@ class TopLevelGUI:
         bg_colour = self.colours["bg"]
         self.root.config(bg=bg_colour)
 
+        # Update current frame background
         if self.current_frame and self.current_frame.winfo_exists():
             self.current_frame.config(bg=bg_colour)
         return bg_colour
@@ -84,7 +85,7 @@ class TopLevelGUI:
         self.all_logos = {}
         self.brands_labels = {}
         self._current_theme = "dark" if is_dark_mode() else "light"
-        self._apply_root_background()
+        self._apply_root_background()    
         self._current_manu = None
         self.console_manu_label = None
         self.pages = []
@@ -97,6 +98,7 @@ class TopLevelGUI:
 
         self._setup_logo()
         self.show_brands_selection()
+        self.root.bind("<FocusIn>", lambda e: self._reactivate_hover_state())
         self.root.after(1000, self._poll_theme)
         self.root.mainloop()
 
@@ -132,8 +134,8 @@ class TopLevelGUI:
             text=text,
             width=width,
             height=height,
-            bg=self.colours["bg"],
-            fg=fg,
+            bg=self.colours["base_btn"],
+            fg=self.colours["btn_text"],
             font=font,
             bd=0,
             relief="flat",
@@ -160,19 +162,17 @@ class TopLevelGUI:
         if not self.current_frame or not self.current_frame.winfo_exists():
             return
 
-        theme_colours = self.colours
-
         def apply_recursive(widget):
             """Apply theme to this widget and its children."""
             if not widget.winfo_exists():
                 return
             try:
                 if isinstance(widget, (tk.Frame, tk.Toplevel)):
-                    widget.config(bg=theme_colours["bg"])
+                    widget.config(bg=self.colours["bg"])
                 elif isinstance(widget, tk.Label):
-                    widget.config(bg=theme_colours["base_btn"], fg=theme_colours["btn_text"])
+                    widget.config(bg=self.colours["base_btn"], fg=self.colours["btn_text"])
                 elif isinstance(widget, tk.Canvas):
-                    widget.config(bg=theme_colours["base_logo"])
+                    widget.config(bg=self.colours["base_logo"])
             except Exception:
                 pass
             for child in widget.winfo_children():
@@ -183,8 +183,8 @@ class TopLevelGUI:
         # Update arrows explicitly
         for arrow in (self.prev_arrow, self.next_arrow):
             if arrow and arrow.winfo_exists():
-                arrow.config(bg=theme_colours["base_btn"], fg=theme_colours["arrow"])
-                add_hover(arrow, theme_colours["base_btn"], theme_colours["hover_btn"])
+                arrow.config(bg=self.colours["base_btn"], fg=self.colours["arrow"])
+                add_hover(arrow, self.colours["base_btn"], self.colours["hover_btn"])
 
     # ---------------- Logo ----------------
     def _setup_logo(self):
@@ -206,43 +206,47 @@ class TopLevelGUI:
             bg=self.colours["bg"]
         ).pack()
 
+        # ----------------- Taskbar / window icon -----------------
         taskbar_logo_path = os.path.join(os.path.dirname(__file__), "..", "resources", "usc_logo.png")
         try:
             taskbar_logo = tk.PhotoImage(file=taskbar_logo_path)
             self.root.iconphoto(False, taskbar_logo)
-            self.taskbar_logo = taskbar_logo
+            self.taskbar_logo = taskbar_logo  # keep a reference
         except Exception:
             pass
 
     # ---------------- Helpers ----------------
     def _create_back_button(self, parent, command, row=None, colspan=4):
-        theme_colours = self.colours
         btn = Label(
             parent,
             text="Back",
             width=BACK_BUTTON_SIZE[0] // 10,
             height=BACK_BUTTON_SIZE[1] // 20,
-            bg=theme_colours["base_btn"],
-            fg=theme_colours["btn_text"],
+            bg=self.colours["base_btn"],
+            fg=self.colours["btn_text"],
             font=BACK_BUTTON_FONT,
-            bd=0,
+            bd=0,          
             relief="flat"
         )
 
         # Hover effect
         def on_enter(e, b=btn):
-            b.config(bg=theme_colours["hover_btn"])
+            b.config(bg=self.colours["hover_btn"])
         def on_leave(e, b=btn):
-            b.config(bg=theme_colours["base_btn"])
+            b.config(bg=self.colours["base_btn"])
 
         btn.bind("<Enter>", on_enter)
         btn.bind("<Leave>", on_leave)
 
         # Click effect
         def on_click(e):
-            btn.config(bg=theme_colours["hover_btn"])
+            btn.config(bg=self.colours["hover_btn"])
             command()
-            btn.config(bg=theme_colours["base_btn"])
+            try:
+                btn.config(bg=self.colours["base_btn"])
+            except tk.TclError:
+                # Button was destroyed or window closed — ignore
+                pass
 
         btn.bind("<Button-1>", on_click)
 
@@ -264,62 +268,167 @@ class TopLevelGUI:
             self._apply_theme_to_current_frame()
             self._refresh_logos_for_theme()
 
+        # Keep polling every second
         self.root.after(1000, self._poll_theme)
-
+        
     def _refresh_logos_for_theme(self):
-        theme_colours = self.colours
-
         if not self.current_frame or not self.current_frame.winfo_exists():
             return
 
+        # Make whole window use background color
         def apply_theme_recursive(widget):
             if not widget.winfo_exists():
                 return
             try:
-                widget.config(bg=theme_colours["bg"])
+                widget.config(bg=self.colours["bg"])
             except Exception:
                 pass
             for child in widget.winfo_children():
                 apply_theme_recursive(child)
 
         apply_theme_recursive(self.root)
-        self.current_frame.config(bg=theme_colours["bg"])
+        self.current_frame.config(bg=self.colours["bg"])
 
-        # Update brand logos
+        # --- Brand and Console logos + fallback text buttons ---
         for widget in self.current_frame.winfo_children():
             if not widget.winfo_exists():
                 continue
+
+            # Brand logo labels (image)
             if isinstance(widget, tk.Label) and hasattr(widget, "brand_name"):
                 brand_name = widget.brand_name
                 logo = self.all_logos.get(brand_name, {}).get(self._current_theme, {}).get("normal")
                 if logo:
-                    widget.config(image=logo, bg=theme_colours["base_logo"])
+                    widget.config(image=logo, bg=self.colours["base_logo"])
                     widget.image = logo
-            elif isinstance(widget, tk.Label) and not hasattr(widget, "brand_name"):
-                widget.config(bg=theme_colours["base_btn"], fg=theme_colours["btn_text"])
 
-        # Update console logos
-        for widget in self.current_frame.winfo_children():
-            if not widget.winfo_exists():
-                continue
-            if isinstance(widget, tk.Canvas) and hasattr(widget, "console_name"):
+            # Fallback text labels/buttons (brands or other labels)
+            elif isinstance(widget, tk.Label) and not hasattr(widget, "brand_name") and not hasattr(widget, "console_name"):
+                widget.config(bg=self.colours["base_btn"], fg=self.colours["btn_text"])
+
+                # Rebind hover handlers using current colours
+                widget.unbind("<Enter>")
+                widget.unbind("<Leave>")
+
+                def _lbl_on_enter(e, w=widget):
+                    # Use current colours at time of event
+                    w.config(bg=self.colours["hover_btn"])
+                def _lbl_on_leave(e, w=widget):
+                    w.config(bg=self.colours["base_btn"])
+
+                widget.bind("<Enter>", _lbl_on_enter)
+                widget.bind("<Leave>", _lbl_on_leave)
+
+            # Console logo canvases
+            elif isinstance(widget, tk.Canvas) and hasattr(widget, "console_name"):
                 console_name = widget.console_name
                 logo = self.console_logos.get(console_name, {}).get(self._current_theme, {}).get("normal")
-                widget.config(bg=theme_colours["base_logo"])
+
+                # Clear and recreate background rectangle and image
                 widget.delete("all")
-                widget.create_rectangle(0, 0, widget.winfo_width(), widget.winfo_height(), fill=theme_colours["base_logo"], outline="")
+                rect_id = widget.create_rectangle(
+                    0, 0, widget.winfo_width() or CONSOLE_CANVAS_WIDTH, widget.winfo_height() or CONSOLE_CANVAS_HEIGHT,
+                    fill=self.colours["base_logo"],
+                    outline=""
+                )
+                widget._bg_rect_id = rect_id
+
                 if logo:
                     widget.create_image(widget.winfo_width() // 2, widget.winfo_height() // 2, anchor="center", image=logo)
                     widget.image = logo
-            elif isinstance(widget, tk.Label) and not hasattr(widget, "console_name"):
-                widget.config(bg=theme_colours["base_btn"], fg=theme_colours["btn_text"])
 
-        # Update arrows
+                # Rebind hover handlers to update the rectangle fill
+                widget.unbind("<Enter>")
+                widget.unbind("<Leave>")
+
+                def _canvas_on_enter(e, w=widget):
+                    rid = getattr(w, "_bg_rect_id", None)
+                    if rid is not None:
+                        try:
+                            w.itemconfig(rid, fill=self.colours["hover_logo"])
+                        except Exception:
+                            pass
+                def _canvas_on_leave(e, w=widget):
+                    rid = getattr(w, "_bg_rect_id", None)
+                    if rid is not None:
+                        try:
+                            w.itemconfig(rid, fill=self.colours["base_logo"])
+                        except Exception:
+                            pass
+
+                widget.bind("<Enter>", _canvas_on_enter)
+                widget.bind("<Leave>", _canvas_on_leave)
+
+            # Other labels (e.g. console fallback labels) — ensure they use colours and hover
+            elif isinstance(widget, tk.Label) and not hasattr(widget, "console_name"):
+                widget.config(bg=self.colours["base_btn"], fg=self.colours["btn_text"])
+
+                widget.unbind("<Enter>")
+                widget.unbind("<Leave>")
+
+                def _lbl2_on_enter(e, w=widget):
+                    w.config(bg=self.colours["hover_btn"])
+                def _lbl2_on_leave(e, w=widget):
+                    w.config(bg=self.colours["base_btn"])
+
+                widget.bind("<Enter>", _lbl2_on_enter)
+                widget.bind("<Leave>", _lbl2_on_leave)
+
+        # --- Arrows ---
         for arrow in (self.prev_arrow, self.next_arrow):
             if arrow and arrow.winfo_exists():
-                arrow.config(bg=theme_colours["base_btn"], fg=theme_colours["arrow"])
-                add_hover(arrow, theme_colours["base_btn"], theme_colours["hover_btn"])
+                arrow.config(bg=self.colours["base_btn"], fg=self.colours["arrow"])
+                add_hover(arrow, self.colours["base_btn"], self.colours["hover_btn"])
+
+        # Finally, force a motion event on the widget under the pointer so hover becomes active immediately
+        self._reactivate_hover_state()
+
+    def _reactivate_hover_state(self):
+        """
+        Ensure hover handlers work after theme change, even if cursor is outside the window.
         
+        Strategy:
+        - For every widget that has hover bindings, generate <Leave> + <Enter> + <Motion>.
+        - This simulates re-entering the widget, fixing macOS issue when theme changes.
+        """
+        try:
+            # Gather all potential hover widgets in the current frame
+            def gather_hover_widgets(widget):
+                widgets = []
+                for child in widget.winfo_children():
+                    # Only consider widgets that actually exist
+                    if not child.winfo_exists():
+                        continue
+                    # Heuristic: labels or canvases we assigned hover to
+                    if isinstance(child, (tk.Label, tk.Canvas)):
+                        widgets.append(child)
+                    # Recurse
+                    widgets.extend(gather_hover_widgets(child))
+                return widgets
+
+            hover_widgets = gather_hover_widgets(self.current_frame)
+
+            # Simulate hover on all
+            for w in hover_widgets:
+                try:
+                    # Use current pointer position relative to widget
+                    x_root, y_root = self.root.winfo_pointerx(), self.root.winfo_pointery()
+                    rel_x = x_root - w.winfo_rootx()
+                    rel_y = y_root - w.winfo_rooty()
+                    # Clamp inside widget bounds
+                    w_w, w_h = max(w.winfo_width(), 1), max(w.winfo_height(), 1)
+                    rel_x = max(0, min(rel_x, w_w - 1))
+                    rel_y = max(0, min(rel_y, w_h - 1))
+
+                    # Trigger enter/leave/motion to refresh hover
+                    w.event_generate("<Leave>")
+                    w.event_generate("<Enter>")
+                    w.event_generate("<Motion>", x=rel_x, y=rel_y)
+                except Exception:
+                    continue
+        except Exception as e:
+            print(f"[HoverFix] _reactivate_hover_state failed: {e}")
+
     # ---------------- Frame Clearing ----------------
     def _clear_frame(self):
         self._polling_active = False  # temporarily pause theme polling
@@ -368,15 +477,12 @@ class TopLevelGUI:
 
             img = self.all_logos.get(manu, {}).get(self._current_theme)
             if img:
-                bg_colour = self.colours["base_logo"]
-                hover_bg = self.colours["hover_logo"]
-
                 canvas = tk.Canvas(
                     self.current_frame,
                     width=BRAND_LOGO_SIZE[0],
                     height=BRAND_LOGO_SIZE[1],
                     highlightthickness=0,
-                    bg=bg_colour
+                    bg=self.colours["base_logo"],
                 )
                 canvas.grid(
                     row=row,
@@ -387,12 +493,13 @@ class TopLevelGUI:
                     sticky="n"
                 )
 
-                canvas_img = canvas.create_image(0, 0, anchor="nw", image=img)
+                canvas.create_image(0, 0, anchor="nw", image=img)
+                canvas.image = img  # prevent GC
 
                 def on_enter(e, c=canvas):
-                    c.config(bg=hover_bg)
+                    c.config(bg=self.colours["hover_logo"])
                 def on_leave(e, c=canvas):
-                    c.config(bg=bg_colour)
+                    c.config(bg=self.colours["base_logo"])
 
                 canvas.bind("<Enter>", on_enter)
                 canvas.bind("<Leave>", on_leave)
@@ -457,14 +564,9 @@ class TopLevelGUI:
 
     # ---------------- Console Button ----------------
     def _console_button(self, parent, console_name):
-        logos = self.console_logos.get(console_name, {}).get(self._current_theme, {})
+        theme = self._current_theme
+        logos = self.console_logos.get(console_name, {}).get(theme, {})
         normal_img = logos.get("normal")
-
-        base_bg = self.colours["base_logo"]
-        hover_bg = self.colours["hover_logo"]
-        base_btn_bg = self.colours["base_btn"]
-        hover_btn_bg = self.colours["hover_btn"]
-        text_fg = self.colours["btn_text"]
 
         if normal_img:
             canvas = tk.Canvas(
@@ -472,26 +574,38 @@ class TopLevelGUI:
                 width=CONSOLE_CANVAS_WIDTH,
                 height=CONSOLE_CANVAS_HEIGHT,
                 highlightthickness=0,
-                bg=base_bg
+                bg=self.colours["base_logo"]
             )
             canvas.grid_propagate(False)
-            canvas.create_rectangle(0, 0, CONSOLE_CANVAS_WIDTH, CONSOLE_CANVAS_HEIGHT, fill=base_bg, outline="")
+
+            # Draw background rectangle and keep reference
+            rect = canvas.create_rectangle(
+                0, 0, CONSOLE_CANVAS_WIDTH, CONSOLE_CANVAS_HEIGHT,
+                fill=self.colours["base_logo"],
+                outline=""
+            )
+
+            # Always center the image
             canvas_img = canvas.create_image(
                 CONSOLE_CANVAS_WIDTH // 2,
                 CONSOLE_CANVAS_HEIGHT // 2,
                 anchor="center",
                 image=normal_img
             )
-            canvas.console_name = console_name
-            canvas.image = normal_img
+
+            canvas.console_name = console_name  # attach name for theme refresh
+            canvas.image = normal_img  # keep reference for Tkinter
+
+            # Store reference for theme updates
             if not hasattr(self, "console_logo_labels"):
                 self.console_logo_labels = []
             self.console_logo_labels.append(canvas)
 
-            def on_enter(e, c=canvas):
-                c.config(bg=hover_bg)
-            def on_leave(e, c=canvas):
-                c.config(bg=base_bg)
+            # Hover effect updates the rectangle fill
+            def on_enter(e, r=rect):
+                canvas.itemconfig(r, fill=self.colours["hover_logo"])
+            def on_leave(e, r=rect):
+                canvas.itemconfig(r, fill=self.colours["base_logo"])
 
             canvas.bind("<Enter>", on_enter)
             canvas.bind("<Leave>", on_leave)
@@ -499,13 +613,14 @@ class TopLevelGUI:
 
             return canvas
         else:
+            # Fallback text button
             lbl = tk.Label(
                 parent,
                 text=console_name,
                 width=CONSOLE_BUTTON_SIZE[0] // 10,
                 height=CONSOLE_BUTTON_SIZE[1] // 20,
-                bg=base_btn_bg,
-                fg=text_fg,
+                bg=self.colours["base_btn"],
+                fg=self.colours["btn_text"],
                 font=("Arial", 16, "bold"),
                 bd=0,
                 relief="flat",
@@ -513,27 +628,127 @@ class TopLevelGUI:
                 justify="center"
             )
 
+            # Hover effect
             def on_enter(e, l=lbl):
-                l.config(bg=hover_btn_bg)
+                l.config(bg=self.colours["hover_btn"])
             def on_leave(e, l=lbl):
-                l.config(bg=base_btn_bg)
+                l.config(bg=self.colours["base_btn"])
 
             lbl.bind("<Enter>", on_enter)
             lbl.bind("<Leave>", on_leave)
             lbl.bind("<Button-1>", lambda e, c=console_name: self._open_console_gui(c))
 
+            # Store reference for theme updates
             if not hasattr(self, "console_logo_labels"):
                 self.console_logo_labels = []
             self.console_logo_labels.append(lbl)
 
             return lbl
 
-    # ---------------- Show Coming Soon ----------------
+    # ---------------- Page Navigation ----------------
+    def _next_page(self):
+        """Go to the next page of consoles."""
+        if self.current_page_index < len(self.pages) - 1:
+            self.current_page_index += 1
+            self._render_console_page(self.current_frame, self.pages[self.current_page_index])
+
+    def _prev_page(self):
+        """Go to the previous page of consoles."""
+        if self.current_page_index > 0:
+            self.current_page_index -= 1
+            self._render_console_page(self.current_frame, self.pages[self.current_page_index])
+
+    # ---------------- Render Console Page ----------------
+    def _render_console_page(self, parent, consoles):
+        # Destroy previous console widgets except label/back button
+        for widget in list(parent.winfo_children()):
+            if widget not in (self.console_manu_label, self.back_button):
+                if widget.winfo_exists():
+                    widget.destroy()
+
+        # Destroy arrows safely
+        if hasattr(self, "prev_arrow") and self.prev_arrow and self.prev_arrow.winfo_exists():
+            self.prev_arrow.destroy()
+        if hasattr(self, "next_arrow") and self.next_arrow and self.next_arrow.winfo_exists():
+            self.next_arrow.destroy()
+
+        # Reset console logo references
+        self.console_logo_labels = []
+
+        # Configure grid columns
+        for i in range(4):
+            parent.grid_columnconfigure(i, weight=1 if i in (0, 3) else 6, uniform="console_col")
+
+        total = len(consoles)
+        for idx, console in enumerate(consoles):
+            row = idx // 2 + 1
+            col = idx % 2 + 1
+            columnspan = 1
+            if total % 2 == 1 and idx == total - 1:
+                col = 1
+                columnspan = 2
+
+            btn = self._console_button(parent, console)
+
+            # Padding for logos vs fallback buttons
+            if hasattr(btn, "console_name"):  # logo canvas
+                padx = CONSOLE_LOGO_PADDING_X
+                pady = CONSOLE_LOGO_PADDING_Y
+            else:
+                padx = CONSOLE_BUTTON_PADDING_X
+                pady = CONSOLE_BUTTON_PADDING_Y
+
+            btn.grid(row=row, column=col, columnspan=columnspan, padx=padx, pady=pady, sticky="n")
+
+        # Setup navigation arrows
+        if self.current_page_index > 0:
+            self.prev_arrow = Label(
+                parent,
+                text="<",
+                font=ARROW_FONT,
+                bg=self.colours["base_btn"],
+                fg=self.colours["arrow"],
+                height=ARROW_BUTTON_HEIGHT,
+                width=ARROW_BUTTON_WIDTH
+            )
+            self.prev_arrow.place(relx=0.00 - ARROW_BUTTON_PADDING_X, rely=0.5 + ARROW_BUTTON_PADDING_Y, anchor="w")
+            add_hover(self.prev_arrow, self.colours["base_btn"], self.colours["hover_btn"])
+            self.prev_arrow.bind("<Button-1>", lambda e: self._prev_page())
+
+        if self.current_page_index < len(self.pages) - 1:
+            self.next_arrow = Label(
+                parent,
+                text=">",
+                font=ARROW_FONT,
+                bg=self.colours["base_btn"],
+                fg=self.colours["arrow"],
+                height=ARROW_BUTTON_HEIGHT,
+                width=ARROW_BUTTON_WIDTH
+            )
+            self.next_arrow.place(relx=1.0 + ARROW_BUTTON_PADDING_X, rely=0.5 + ARROW_BUTTON_PADDING_Y, anchor="e")
+            add_hover(self.next_arrow, self.colours["base_btn"], self.colours["hover_btn"])
+            self.next_arrow.bind("<Button-1>", lambda e: self._next_page())
+                        
+    # ---------------- Open Console GUI ----------------
+    def _open_console_gui(self, console_name):
+        gui_class = CONSOLE_GUI_MAP.get(console_name)
+
+        if callable(gui_class):
+            # Create a new frame for the console GUI
+            self._clear_frame()
+            console_frame = Frame(self.root, padx=20, pady=20, bg=self.colours["bg"])
+            console_frame.pack(expand=True, fill="both")
+            gui_class(console_frame)
+        else:
+            self._show_coming_soon(console_name)
+
+    # - Show Coming Soon -
     def _show_coming_soon(self, console_name):
         self._clear_frame()
         self.current_frame = Frame(self.root, padx=50, pady=50, bg=self.colours["bg"])
         self.current_frame.pack(expand=True, fill="both")
 
+        # Label at the top
         Label(
             self.current_frame,
             text=f"{console_name} is Coming Soon...",
@@ -542,6 +757,7 @@ class TopLevelGUI:
             bg=self.colours["bg"]
         ).pack(anchor="n", pady=50)
 
+        # Back button
         back_btn = Label(
             self.current_frame,
             text="Back",
@@ -557,6 +773,7 @@ class TopLevelGUI:
         )
 
         def safe_config(widget, **kwargs):
+            """Safely configure a widget if it still exists."""
             if widget and widget.winfo_exists():
                 widget.config(**kwargs)
 
