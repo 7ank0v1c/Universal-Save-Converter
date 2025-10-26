@@ -1,7 +1,7 @@
 # gui/theme_constants.py
 
 # Button Colours
-DARK_BASE_BUTTON_COLOUR = "#1e1e1e"
+DARK_BASE_BUTTON_COLOUR = "#272727"
 DARK_HOVER_BUTTON_COLOUR = "#2e2e2e"
 DARK_BUTTON_TEXT_COLOUR = "#ffffff"
 LIGHT_BASE_BUTTON_COLOUR = "#E8E8E8"
@@ -11,14 +11,18 @@ LIGHT_BUTTON_TEXT_COLOUR = "#000000"
 BUTTON_TEXT_COLOUR = "#ffffff"
 
 # Logo Colours
-DARK_BASE_LOGO_COLOUR = "#1e1e1e"
+DARK_BASE_LOGO_COLOUR = "#272727"
 DARK_HOVER_LOGO_COLOUR = "#2e2e2e"
 LIGHT_BASE_LOGO_COLOUR = "#E8E8E8"
 LIGHT_HOVER_LOGO_COLOUR = "#fbfbfb"
 
-# Arrow Colours
-ARROW_FONT = ("Arial", 50, "bold")
+# Back Button
+DARK_BACK_BUTTON_COLOUR = "#272727"
+LIGHT_BACK_BUTTON_COLOUR = "#cccccc"
 BACK_BUTTON_FONT = ("Arial", 12, "bold")
+
+# Arrow Button
+ARROW_FONT = ("Arial", 50, "bold")
 DARK_ARROW_COLOUR = "#ffffff"
 LIGHT_ARROW_COLOUR = "#000000"
 
@@ -28,7 +32,7 @@ LIGHT_GUI_TEXT_COLOUR = "#000000"
 
 # GUI Background Colours
 DARK_GUI_BACKGROUND_COLOUR = "#1e1e1e"
-LIGHT_GUI_BACKGROUND_COLOUR = "#E8E8E8"
+LIGHT_GUI_BACKGROUND_COLOUR = "#e8e8e8"
 
 
 # - Begging of new themes (unused) -

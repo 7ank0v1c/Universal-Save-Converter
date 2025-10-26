@@ -95,7 +95,7 @@ BRAND_BUTTON_PADDING_Y = 10   #vertical
 CONSOLE_BUTTON_PADDING_X = 10   #horizontal
 CONSOLE_BUTTON_PADDING_Y = 8   #vertical
 ARROW_BUTTON_PADDING_X = 0.02  #horizontal
-ARROW_BUTTON_PADDING_Y = 0.03   #vertical
+ARROW_BUTTON_PADDING_Y = 0.13   #vertical
  
 # Actual Size of Canvases (rectangle behind logos) 
 BRAND_CANVAS_WIDTH  = BRAND_LOGO_SIZE[0] + BRAND_LOGO_PADDING_X * 10  # width

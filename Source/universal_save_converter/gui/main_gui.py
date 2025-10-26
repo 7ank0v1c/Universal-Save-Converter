@@ -54,6 +54,8 @@ from .theme_constants import (
     DARK_BUTTON_TEXT_COLOUR,
     DARK_GUI_BACKGROUND_COLOUR,
     LIGHT_GUI_BACKGROUND_COLOUR,
+    DARK_BACK_BUTTON_COLOUR,
+    LIGHT_BACK_BUTTON_COLOUR,
 )
 
 from core.theme_utils import (
@@ -96,6 +98,7 @@ class TopLevelGUI:
         self.console_manu_label = None
         self.pages = []
         self.current_page_index = 0
+        self.history = []  # keeps track of previously opened screens
         self.prev_arrow = None
         self.next_arrow = None
         self._hover_initialized = False
@@ -104,12 +107,21 @@ class TopLevelGUI:
         preload_console_logos(self.console_logos)
 
         self._setup_logo()
-        self.show_brands_selection()
+        self.bottom_frame = tk.Frame(self.root, bg=self.colours["bg"])
+        self.bottom_frame.pack(side="bottom", fill="x")
+
+        # Create persistent back button
+        self.back_button = self._create_back_button(self.bottom_frame)
+
+        
         self._apply_root_background()    
         self.root.bind("<FocusIn>", lambda e: self._reactivate_hover_state())
         self.root.after(1000, self._mark_hover_ready)
         self.root.after(1000, self._poll_theme)
+        self.show_brands_selection()
         self.root.mainloop()
+
+
 
     def _mark_hover_ready(self):
         """Allow hover reactivation only after first second of runtime."""
@@ -128,6 +140,7 @@ class TopLevelGUI:
                 "base_logo": DARK_BASE_LOGO_COLOUR,
                 "hover_logo": DARK_HOVER_LOGO_COLOUR,
                 "arrow": DARK_ARROW_COLOUR,
+                "back_btn": DARK_BACK_BUTTON_COLOUR,
             }
         else:
             return {
@@ -139,6 +152,7 @@ class TopLevelGUI:
                 "base_logo": LIGHT_BASE_LOGO_COLOUR,
                 "hover_logo": LIGHT_HOVER_LOGO_COLOUR,
                 "arrow": LIGHT_ARROW_COLOUR,
+                "back_btn": LIGHT_BACK_BUTTON_COLOUR,
             }
 
     def text_label(self, parent, text, command, width, height, bg, fg, font=("Arial", 16, "bold")):
@@ -251,44 +265,26 @@ class TopLevelGUI:
             pass
 
     # ---------------- Helpers ----------------
-    def _create_back_button(self, parent, command, row=None, colspan=4):
+    def _create_back_button(self, parent):
         btn = Label(
             parent,
             text="Back",
             width=BACK_BUTTON_SIZE[0] // 10,
             height=BACK_BUTTON_SIZE[1] // 20,
-            bg=self.colours["base_btn"],
+            bg=self.colours["back_btn"],
             fg=self.colours["btn_text"],
             font=BACK_BUTTON_FONT,
-            bd=0,          
+            bd=0,
             relief="flat"
         )
 
-        # Hover effect
-        def on_enter(e, b=btn):
-            b.config(bg=self.colours["hover_btn"])
-        def on_leave(e, b=btn):
-            b.config(bg=self.colours["base_btn"])
-
+        def on_enter(e): btn.config(bg=self.colours["hover_btn"])
+        def on_leave(e): btn.config(bg=self.colours["back_btn"])
+        # Click behaviour will be set dynamically later
         btn.bind("<Enter>", on_enter)
         btn.bind("<Leave>", on_leave)
 
-        # Click effect
-        def on_click(e):
-            btn.config(bg=self.colours["hover_btn"])
-            command()
-            try:
-                btn.config(bg=self.colours["base_btn"])
-            except tk.TclError:
-                # Button was destroyed or window closed — ignore
-                pass
-
-        btn.bind("<Button-1>", on_click)
-
-        if row is None:
-            row = parent.grid_size()[1]
-        btn.grid(row=row, column=0, columnspan=colspan, pady=20)
-
+        btn.pack(side="bottom", pady=10)
         return btn
 
     def _poll_theme(self):
@@ -443,7 +439,26 @@ class TopLevelGUI:
                 arrow.config(bg=self.colours["base_btn"], fg=self.colours["arrow"])
                 add_hover(arrow, self.colours["base_btn"], self.colours["hover_btn"])
                 
-        
+        # ---------------- Refresh back button (if exists) ----------------
+        if hasattr(self, "back_button") and self.back_button.winfo_exists():
+            try:
+                # Force correct layering and background (avoids layout interference)
+                self.back_button.lift()  # ensure it stays above other frames
+                self.back_button.config(
+                    bg=self.colours["base_btn"],
+                    fg=self.colours["btn_text"]
+                )
+
+                # Remove any old bindings before re-adding
+                self.back_button.unbind("<Enter>")
+                self.back_button.unbind("<Leave>")
+
+                def on_enter(e): self.back_button.config(bg=self.colours["hover_btn"])
+                def on_leave(e): self.back_button.config(bg=self.colours["base_btn"])
+                self.back_button.bind("<Enter>", on_enter)
+                self.back_button.bind("<Leave>", on_leave)
+            except Exception as e:
+                print(f"[ThemeRefresh] Back button refresh failed: {e}")
         
     def _reactivate_hover_state(self):
         """Prevent premature hover activation at startup."""
@@ -503,10 +518,23 @@ class TopLevelGUI:
         self.console_logo_labels = []  # clear stored references
         self._polling_active = True
 
+    def go_back(self):
+        """Return to the previous screen in navigation history."""
+        if self.history:
+            last_screen = self.history.pop()
+            last_screen()  # call the last stored function
+        else:
+            self.show_brands_selection()  # fallback if nothing in history
+
     def show_brands_selection(self):
+        self.history.append(self.show_brands_selection)
         self._clear_frame()
         self.current_frame = Frame(self.root, bg=self.colours["bg"])
         self.current_frame.pack(expand=True, fill="both")
+
+        # Hide back button on initial page
+        self.back_button.pack_forget()
+        self.bottom_frame.pack_forget()
 
         # Title
         title_lbl = Label(
@@ -612,6 +640,11 @@ class TopLevelGUI:
         self.current_frame = Frame(self.root, padx=50, pady=10, bg=self.colours["bg"])
         self.current_frame.pack(expand=True, fill="both")
 
+        # Ensure back button is visible
+        self.bottom_frame.pack(side="bottom", fill="x")
+        self.back_button.pack(side="bottom", pady=20)
+        self.back_button.bind("<Button-1>", lambda e: self.show_brands_selection())
+
         logo_img = self.all_logos.get(manu, {}).get(self._current_theme)
         if manu != "Other" and logo_img:
             manu_label = Label(self.current_frame, image=logo_img, bg=self.colours["bg"])
@@ -636,14 +669,12 @@ class TopLevelGUI:
         self.pages = [consoles[i:i + 6] for i in range(0, len(consoles), 6)]
         self.current_page_index = 0
 
-        self.back_button = self._create_back_button(self.current_frame,
-                                                    lambda: self.show_brands_selection(),
-                                                    row=((len(self.pages[0]) + 1) // 2) + 1)
+        self.back_button.bind("<Button-1>", lambda e: self.show_brands_selection())
 
-        self._render_console_page(self.current_frame, self.pages[self.current_page_index])
+        self._render_console_page(self.current_frame, self.pages[self.current_page_index], manu)
 
     # ---------------- Console Button ----------------
-    def _console_button(self, parent, console_name):
+    def _console_button(self, parent, console_name, manu):
         theme = self._current_theme
         logos = self.console_logos.get(console_name, {}).get(theme, {})
         normal_img = logos.get("normal")
@@ -689,7 +720,7 @@ class TopLevelGUI:
 
             canvas.bind("<Enter>", on_enter)
             canvas.bind("<Leave>", on_leave)
-            canvas.bind("<Button-1>", lambda e, c=console_name: self._open_console_gui(c))
+            canvas.bind("<Button-1>", lambda e, c=console_name, m=manu: self._open_console_gui(c, m))
 
             return canvas
         else:
@@ -726,20 +757,20 @@ class TopLevelGUI:
             return lbl
 
     # ---------------- Page Navigation ----------------
-    def _next_page(self):
+    def _next_page(self, manu):
         """Go to the next page of consoles."""
         if self.current_page_index < len(self.pages) - 1:
             self.current_page_index += 1
-            self._render_console_page(self.current_frame, self.pages[self.current_page_index])
+            self._render_console_page(self.current_frame, self.pages[self.current_page_index], manu)
 
-    def _prev_page(self):
+    def _prev_page(self, manu):
         """Go to the previous page of consoles."""
         if self.current_page_index > 0:
             self.current_page_index -= 1
-            self._render_console_page(self.current_frame, self.pages[self.current_page_index])
+            self._render_console_page(self.current_frame, self.pages[self.current_page_index], manu)
 
     # ---------------- Render Console Page ----------------
-    def _render_console_page(self, parent, consoles):
+    def _render_console_page(self, parent, consoles, manu):
         # Destroy previous console widgets except label/back button
         for widget in list(parent.winfo_children()):
             if widget not in (self.console_manu_label, self.back_button):
@@ -768,7 +799,7 @@ class TopLevelGUI:
                 col = 1
                 columnspan = 2
 
-            btn = self._console_button(parent, console)
+            btn = self._console_button(parent, console, manu)
 
             # Padding for logos vs fallback buttons
             if hasattr(btn, "console_name"):  # logo canvas
@@ -793,7 +824,7 @@ class TopLevelGUI:
             )
             self.prev_arrow.place(relx=0.00 - ARROW_BUTTON_PADDING_X, rely=0.5 + ARROW_BUTTON_PADDING_Y, anchor="w")
             add_hover(self.prev_arrow, self.colours["base_btn"], self.colours["hover_btn"])
-            self.prev_arrow.bind("<Button-1>", lambda e: self._prev_page())
+            self.prev_arrow.bind("<Button-1>", lambda e, m=manu: self._prev_page(m))
 
         if self.current_page_index < len(self.pages) - 1:
             self.next_arrow = Label(
@@ -807,23 +838,34 @@ class TopLevelGUI:
             )
             self.next_arrow.place(relx=1.0 + ARROW_BUTTON_PADDING_X, rely=0.5 + ARROW_BUTTON_PADDING_Y, anchor="e")
             add_hover(self.next_arrow, self.colours["base_btn"], self.colours["hover_btn"])
-            self.next_arrow.bind("<Button-1>", lambda e: self._next_page())
+            self.next_arrow.bind("<Button-1>", lambda e, m=manu: self._next_page(m))
                         
     # ---------------- Open Console GUI ----------------
-    def _open_console_gui(self, console_name):
+    def _open_console_gui(self, console_name, manu=None):
+        self.history.append(lambda: self.show_brands_gui(manu))
         gui_class = CONSOLE_GUI_MAP.get(console_name)
 
         if callable(gui_class):
-            # Create a new frame for the console GUI
+            # Clear and create new console frame
             self._clear_frame()
-            console_frame = Frame(self.root, padx=20, pady=20, bg=self.colours["bg"])
+            console_frame = Frame(self.root, padx=20, pady=1, bg=self.colours["bg"])
             console_frame.pack(expand=True, fill="both")
-            gui_class(console_frame)
+
+            # Set the current frame reference
+            self.current_frame = console_frame
+
+            # Inner frame for console-specific content
+            content_frame = Frame(console_frame, bg=self.colours["bg"])
+            content_frame.pack(expand=True, fill="both")
+
+            # Build the console-specific GUI inside content_frame
+            gui_class(content_frame)
         else:
             self._show_coming_soon(console_name)
 
     # - Show Coming Soon -
     def _show_coming_soon(self, console_name):
+        self.history.append(self.show_brands_selection)
         self._clear_frame()
         self.current_frame = Frame(self.root, padx=50, pady=50, bg=self.colours["bg"])
         self.current_frame.pack(expand=True, fill="both")
@@ -839,38 +881,6 @@ class TopLevelGUI:
         coming_lbl._no_hover = True  # mark it to skip hover
         coming_lbl.pack(anchor="n", pady=50)
 
-        # Back button
-        back_btn = Label(
-            self.current_frame,
-            text="Back",
-            width=BACK_BUTTON_SIZE[0] // 10,
-            height=BACK_BUTTON_SIZE[1] // 20,
-            bg=self.colours["base_btn"],
-            fg=self.colours["btn_text"],
-            font=BACK_BUTTON_FONT,
-            bd=0,
-            relief="flat",
-            anchor="center",
-            justify="center"
-        )
-
-        def safe_config(widget, **kwargs):
-            """Safely configure a widget if it still exists."""
-            if widget and widget.winfo_exists():
-                widget.config(**kwargs)
-
-        def on_enter(e):
-            safe_config(back_btn, bg=self.colours["hover_btn"])
-        def on_leave(e):
-            safe_config(back_btn, bg=self.colours["base_btn"])
-        def on_click(e):
-            safe_config(back_btn, bg=self.colours["hover_btn"])
-            self.show_brands_gui(self._current_manu)
-
-        back_btn.bind("<Enter>", on_enter)
-        back_btn.bind("<Leave>", on_leave)
-        back_btn.bind("<Button-1>", on_click)
-        back_btn.pack(anchor="n", pady=20)
 
 if __name__ == "__main__":
     TopLevelGUI()
